@@ -242,15 +242,18 @@
 
         ul li {
             margin-bottom: 8px;
-            font-size: 1.1rem;
+            /* font-size: 1.1rem; */
             display: flex;
             align-items: center;
+            font-size: clamp(1rem, 1.1vw, 2.5rem);
+            text-align: left;
         }
 
         ul li i {
             margin-right: 10px;
             font-size: 1.5rem;
             color: var(--secondary);
+            text-align: left;
         }
 
 
@@ -547,7 +550,7 @@
             align-items: center;
             justify-content: center;
             gap: 15px;
-            font-size: 1.5rem;
+            font-size: clamp(0.8rem, 1.5vw, 2.5rem);
             font-weight: 600;
             color: var(--black);
             padding: 10px 0;
@@ -730,6 +733,34 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        @media (max-width: 768px) {
+            .about-me {
+                text-align: center;
+                width: 90%;
+                height: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .button-black {
+                font-weight: 500;
+                padding: 1em 3em;
+                font-size: clamp(0.7rem, 1.5vw, 2.5rem);
+            }
+
+            .buttons-container {
+                width: 90%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .lets-connect {
+                text-align: center;
+                width: 90%;
+                height: auto;
+            }
+        }
     </style>
 </head>
 
@@ -756,7 +787,8 @@
                 <button class="button-black button-download">Download Resume</button>
             </a> -->
             <div class="buttons-container">
-                <a href="https://github.com/Ramvilla1997/my-portfolio/blob/main/assets/Ram%20-%20FSL.pdf" download="RamVilla_Resume.pdf" class="button-mask">
+                <a href="https://github.com/Ramvilla1997/my-portfolio/blob/main/assets/Ram%20-%20FSL.pdf"
+                    download="RamVilla_Resume.pdf" class="button-mask">
                     <button class="button-black button-download">Download Resume</button>
                 </a>
                 <a href="#projects" class="button-mask">
