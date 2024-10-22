@@ -363,6 +363,10 @@
         }
 
 
+
+
+
+
         /* Media Queries for smaller screens */
         @media (max-width: 768px) {
             .main-heading {
@@ -734,13 +738,37 @@
             transform: translateY(0);
         }
 
+
         @media (max-width: 768px) {
             .about-me {
+                padding: 80px 20px; /* Reduce padding for mobile */
                 text-align: center;
                 width: 80%;
                 height: auto;
             }
+
+            .about-me p {
+                font-size: 1rem; /* Smaller font size for mobile */
+                line-height: 1.5;
+                padding: 10px;
+            }
         }
+
+        @media (max-width: 480px) {
+            .about-me {
+                padding: 60px 15px; /* Even smaller padding for very small devices */
+                text-align: center;
+                width: 80%;
+                height: auto;
+            }
+
+            .about-me p {
+                font-size: 0.9rem; /* Smaller font for smaller mobile devices */
+                padding: 20px 0;
+
+            }
+        }
+
 
         @media (max-width: 768px) {
             .button-black {
