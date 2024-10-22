@@ -15,18 +15,21 @@
 
         @font-face {
             font-family: neue regrade;
-            src: url(./neue_regrade/) format('truetype');
+            src: url('https://github.com/Ramvilla1997/my-portfolio/tree/main/neue_regrade') format('truetype');
             font-weight: 300 800;
             font-style: normal;
             font-display: swap;
         }
 
+
         @font-face {
-            font-family: 'Signaturex';
-            src: url('./SignaturexDemoRegular.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
+        font-family: 'Signaturex';
+        src: url('https://raw.githubusercontent.com/Ramvilla1997/my-portfolio/main/SignaturexDemoRegular.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+        
+    }
+
 
         * {
             box-sizing: border-box;
@@ -84,33 +87,46 @@
             justify-content: center;
             align-items: center;
             gap: 2vh;
+            margin-top: 5%;
         }
 
         .main-heading {
+            font-weight: 600;
+            font-style: normal;
+            font-feature-settings: "tnum" 1;
             font-size: clamp(2rem, 6vw, 4rem);
-            font-weight: 700;
             color: var(--white);
-            text-transform: uppercase;
+            text-transform: capitalize;
             margin: 0;
             padding: 0 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+
         }
 
+
         .sub-heading {
-            font-size: clamp(1.5rem, 5vw, 3.5rem);
+            font-size: clamp(1.5rem, 6vw, 3.5rem);
             font-weight: 900;
             font-style: italic;
+            font-feature-settings: "tnum" 1;
             color: var(--black);
             margin: 0;
             padding: 0 20px;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3); /* Subtle shadow */
+
         }
 
         .welcome-text {
             font-size: clamp(1rem, 3.5vw, 2.5rem);
-            font-weight: 400;
+            font-weight: 900;
             color: var(--white);
             margin: 0;
             padding: 0 20px;
             font-family: 'Signaturex', sans-serif;
+            letter-spacing: 4px; /* Adds slight spacing between letters */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+
+
         }
 
         .buttons-container {
@@ -118,6 +134,7 @@
             justify-content: center;
             gap: 20px;
             margin-top: 3vh;
+            
         }
 
         .button-mask {
@@ -132,7 +149,7 @@
             padding: 1.2em 3em;
             color: var(--white);
             cursor: pointer;
-            font-size: clamp(1rem, 2.5vw, 1.5rem);
+            font-size: clamp(1rem, 1vw, 1.5rem);
             text-transform: capitalize;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
@@ -808,40 +825,25 @@
 
         <div class="heading-container">
             <h1 class="main-heading">Hi, I'm Ram Villa.</h1>
-            <h2 class="sub-heading ">I'm a Full Stack Developer.</h2>
+            <h2 class="sub-heading ">I'm a <Span style="color: var(--white);">Software + Data</Span> Engineer</h2>
             <h3 class="welcome-text">Welcome to my portfolio!</h3>
 
             <!-- <a href="./Ram Villa.pdf" download="RamVilla_Resume.pdf" class="button-mask">
                 <button class="button-black button-download">Download Resume</button>
             </a> -->
             <div class="buttons-container">
-                <a href="https://github.com/Ramvilla1997/my-portfolio/blob/main/assets/Ram%20-%20FSL.pdf"
-                    download="RamVilla_Resume.pdf" class="button-mask">
+                <a href="https://raw.githubusercontent.com/Ramvilla1997/my-portfolio/main/assets/Ram%20-%20FSL.pdf" download="RamVilla_Resume.pdf" class="button-mask">
                     <button class="button-black button-download">Download Resume</button>
                 </a>
                 <a href="#projects" class="button-mask">
                     <button class="button-black">View My Projects</button>
                 </a>
             </div>
+            
         </div>
     </div>
 
-    <!-- <div id="hero" class="black-background-container">
-        <div class="heading-container">
-            <h1 class="main-heading">Hi, I'm Ram Villa.</h1>
-            <h2 class="sub-heading">Full Stack Developer | Data Engineer</h2>
-            <h3 class="welcome-text">Crafting modern web applications and architecting data pipelines.</h3>
 
-            <div class="buttons-container">
-                <a href="./RamVilla_Resume.pdf" download="RamVilla_Resume.pdf" class="button-mask">
-                    <button class="button-black button-download">Download Resume</button>
-                </a>
-                <a href="#projects" class="button-mask">
-                    <button class="button-black">View My Projects</button>
-                </a>
-            </div>
-        </div>
-    </div> -->
 
     <!-- About Me Section -->
     <section id="about" class="about-me section">
@@ -852,49 +854,6 @@
             processes, and front-end development, I have a proven track record of delivering high-performance,
             user-centric applications.</p>
     </section>
-    <!-- 
-    <section id="skills" class="skills section">
-        <h3>Technical Skills</h3>
-        <div class="skills-grid">
-            <div class="skill-card level-90">
-                <div class="skill-title">HTML5 / CSS3 / JavaScript</div>
-                <div class="progress-bar">
-                    <div class="progress"></div>
-                </div>
-            </div>
-            <div class="skill-card level-80">
-                <div class="skill-title">React.js / Vue.js</div>
-                <div class="progress-bar">
-                    <div class="progress"></div>
-                </div>
-            </div>
-            <div class="skill-card level-80">
-                <div class="skill-title">Node.js / Express</div>
-                <div class="progress-bar">
-                    <div class="progress"></div>
-                </div>
-            </div>
-            <div class="skill-card level-70">
-                <div class="skill-title">MongoDB / SQL / PostgreSQL</div>
-                <div class="progress-bar">
-                    <div class="progress"></div>
-                </div>
-            </div>
-            <div class="skill-card level-70">
-                <div class="skill-title">AWS / Lambda / DynamoDB / S3</div>
-                <div class="progress-bar">
-                    <div class="progress"></div>
-                </div>
-            </div>
-            <div class="skill-card level-60">
-                <div class="skill-title">Data Engineering / ETL / Redshift</div>
-                <div class="progress-bar">
-                    <div class="progress"></div>
-                </div>
-            </div>
-        </div>
-    </section>
-     -->
 
     <section id="skills" class="skills section">
         <h3>My Expertise Areas</h3>
