@@ -131,6 +131,7 @@ export async function generateBrief(request: Request, deps: BriefDeps): Promise<
     return { status: 429, body: { error: 'Too many requests. Try again in a minute.' } };
   }
   if (!deps.apiKey) {
+    console.error('brief: GEMINI_API_KEY is not set in this environment');
     return { status: 503, body: { error: 'Briefings are not configured.' } };
   }
 
@@ -149,10 +150,13 @@ export async function generateBrief(request: Request, deps: BriefDeps): Promise<
       },
     );
     if (!upstream.ok) {
+      const detail = (await upstream.text()).slice(0, 300);
+      console.error(`brief: Gemini responded ${upstream.status}: ${detail}`);
       return { status: 502, body: { error: 'The briefing service did not answer.' } };
     }
     const text = extractText(await upstream.json());
     if (text.length === 0) {
+      console.error('brief: Gemini returned no text');
       return { status: 502, body: { error: 'The briefing service returned nothing.' } };
     }
     return { status: 200, body: { text } };
@@ -160,6 +164,7 @@ export async function generateBrief(request: Request, deps: BriefDeps): Promise<
     if (error instanceof BriefError) {
       return { status: error.status, body: { error: error.message } };
     }
+    console.error('brief: unexpected failure', error);
     return { status: 500, body: { error: 'Something went wrong.' } };
   }
 }
