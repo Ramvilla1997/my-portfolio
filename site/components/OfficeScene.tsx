@@ -16,6 +16,7 @@ export interface SceneAgent {
 
 interface OfficeSceneProps {
   readonly agents: Record<AgentId, SceneAgent>;
+  readonly activity: Partial<Record<AgentId, string>>;
   readonly reduced: boolean;
   readonly working: number;
 }
@@ -23,7 +24,7 @@ interface OfficeSceneProps {
 const HALF_VIEW = 8.4;
 const LABEL_HEIGHT = 2.9;
 
-export function OfficeScene({ agents, reduced, working }: OfficeSceneProps) {
+export function OfficeScene({ agents, activity, reduced, working }: OfficeSceneProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const labelRefs = useRef<Partial<Record<AgentId, HTMLDivElement | null>>>({});
   const agentsRef = useRef(agents);
@@ -59,7 +60,8 @@ export function OfficeScene({ agents, reduced, working }: OfficeSceneProps) {
     mount.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    const { robots } = buildOffice(scene);
+    const office = buildOffice(scene);
+    const { robots } = office;
 
     const camera = new THREE.OrthographicCamera(-HALF_VIEW, HALF_VIEW, HALF_VIEW, -HALF_VIEW, 0.1, 100);
     camera.position.set(22, 22, 22);
@@ -100,6 +102,7 @@ export function OfficeScene({ agents, reduced, working }: OfficeSceneProps) {
       }
       const time = (now - start) / 1000;
       const state = agentsRef.current;
+      office.update(time);
 
       for (const role of roster) {
         const rig = robots[role.id];
@@ -151,9 +154,12 @@ export function OfficeScene({ agents, reduced, working }: OfficeSceneProps) {
             labelRefs.current[role.id] = element;
           }}
         >
-          <span className="office-dot" style={{ background: role.color }} />
-          <span>{role.name}</span>
-          <small>{role.role}</small>
+          <span className="office-label-main">
+            <span className="office-dot" style={{ background: role.color }} />
+            <span>{role.name}</span>
+            <small>{role.role}</small>
+          </span>
+          {activity[role.id] ? <span className="office-activity">{activity[role.id]}</span> : null}
         </div>
       ))}
       <div className="office-status">

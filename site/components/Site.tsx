@@ -2,7 +2,7 @@
 
 import { About, Contact, Experience, Projects, Resume } from './Sections';
 import { EffectsProvider } from './EffectsContext';
-import { Workspace } from './Workspace';
+import { Playground } from './Playground';
 import { profile } from '../content/portfolio';
 
 export function Site() {
@@ -16,7 +16,7 @@ export function Site() {
           <nav aria-label="Primary">
             <ul className="nav-links">
               <li>
-                <a href="#workspace">Workspace</a>
+                <a href="#workspace">Playground</a>
               </li>
               <li>
                 <a href="#about">About</a>
@@ -46,7 +46,7 @@ export function Site() {
             <p className="lede">{profile.intro}</p>
             <div className="cta-row">
               <a className="btn btn-primary" href="#workspace">
-                Meet the agents
+                Ask the office
               </a>
               <a className="btn" href="#projects">
                 See my work
@@ -58,7 +58,7 @@ export function Site() {
           </div>
         </section>
 
-        <Workspace />
+        <Playground />
         <About />
         <Experience />
         <Projects />

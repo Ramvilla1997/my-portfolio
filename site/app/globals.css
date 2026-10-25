@@ -66,45 +66,40 @@ h2 { font-size: clamp(1.875rem, 3.6vw, 2.5rem); }
 .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 .btn-primary:hover { background: #095a56; border-color: #095a56; color: #fff; }
 
-/* Workspace: floor plan, agents, and their task cards */
 .workspace { position: relative; padding: 88px 0; border-top: 1px solid var(--line); }
-.ws-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 32px; margin-top: 40px; align-items: start; }
-
-.ws-roster { list-style: none; display: grid; gap: 12px; }
-.ws-card { background: var(--surface); border: 1px solid var(--line); border-left-width: 4px; border-radius: var(--radius); padding: 16px 18px; }
-.ws-card-head { display: flex; gap: 10px; align-items: center; }
-.ws-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
-.ws-role { color: var(--muted); }
-.ws-status { margin: 6px 0 12px; color: var(--muted); font-size: 0.9375rem; }
-.ws-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-
-.ws-log-head { margin-top: 48px; }
-.ws-log-head h3 { font-size: 1.125rem; }
-.ws-log-head p { margin: 4px 0 0; color: var(--muted); font-size: 0.9375rem; }
-.ws-log { list-style: none; margin-top: 16px; display: grid; gap: 10px; }
-.ws-log-item { display: flex; gap: 12px; align-items: flex-start; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
-.ws-log-item p { margin: 4px 0 0; }
-.ws-log-empty { color: var(--muted); }
-.ws-source { margin-left: 8px; font-size: 0.75rem; font-weight: 600; border-radius: 999px; padding: 2px 8px; background: var(--accent-soft); color: var(--accent); }
-.ws-source--gemini { background: #eef0ff; color: #3b4ea8; }
-.ws-source--notice { background: #f3f1ec; color: var(--muted); }
 
 
-/* 3D office stage: a dark room with a warm, lit floor. Labels sit over the agents. */
+
+
 .office-wrap { position: relative; aspect-ratio: 4 / 3; border-radius: 22px; overflow: hidden; background: #1b1d23; box-shadow: 0 24px 50px rgb(20 22 28 / 28%); }
 .office-mount { position: absolute; inset: 0; }
 .office-mount canvas { display: block; width: 100%; height: 100%; }
-.office-label { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 999px; background: rgb(32 35 43 / 92%); color: #f5f3ee; font: 600 12px/1 system-ui, sans-serif; white-space: nowrap; pointer-events: none; will-change: transform; box-shadow: 0 6px 16px rgb(0 0 0 / 35%); }
+.office-label { position: absolute; left: 0; top: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 220px; padding: 4px 8px; border-radius: 999px; background: rgb(32 35 43 / 92%); color: #f5f3ee; font: 600 12px/1 system-ui, sans-serif; white-space: nowrap; pointer-events: none; will-change: transform; box-shadow: 0 6px 16px rgb(0 0 0 / 35%); }
+.office-label-main { display: flex; align-items: center; gap: 5px; }
 .office-label small { color: #a9adb8; font-weight: 500; font-size: 10px; }
+.office-activity { display: block; width: 200px; box-sizing: border-box; padding: 4px 8px; border-radius: 8px; background: #f5f0e4; color: #15171c; font: 500 10.5px/1.35 system-ui, sans-serif; text-align: center; white-space: normal; box-shadow: 0 4px 10px rgb(0 0 0 / 30%); }
 @media (max-width: 640px) { .office-label small { display: none; } }
 .office-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
 .office-status { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: rgb(32 35 43 / 88%); color: #f5f3ee; font: 500 14px/1 system-ui, sans-serif; white-space: nowrap; }
 
-/* Live ticker: the agents' latest tasks, visible without scrolling to the cards */
-.ws-live { display: flex; align-items: center; gap: 10px; margin-top: 32px; padding: 12px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; font-size: 0.9375rem; color: var(--text); }
-.ws-live strong { color: var(--ink); }
-.ws-live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; animation: livepulse 1.6s ease-in-out infinite; }
-@keyframes livepulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.8); } }
+
+/* Agent playground: a search bar, the answer, and the 3D office */
+.playground { padding: 88px 0; border-top: 1px solid var(--line); }
+.pg-search { display: flex; gap: 10px; margin-top: 32px; padding: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; box-shadow: 0 12px 30px rgb(21 23 28 / 6%); }
+.pg-search input { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 1.0625rem; color: var(--ink); padding: 12px 18px; border-radius: 999px; }
+.pg-search input::placeholder { color: #8a8f98; }
+.pg-search input:focus { outline: none; }
+.pg-search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft), 0 12px 30px rgb(21 23 28 / 6%); }
+.pg-search button { border: 0; border-radius: 999px; padding: 0 22px; min-height: 44px; background: var(--accent); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+.pg-search button:disabled { opacity: 0.45; cursor: default; }
+.pg-answer { margin-top: 20px; padding: 22px 24px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.pg-question { margin: 0 0 10px; font-size: 0.9375rem; color: var(--muted); }
+.pg-answer-body { display: grid; gap: 12px; }
+.pg-answer-body p { margin: 0; font-size: 1.0625rem; color: var(--ink); }
+.pg-agent { display: inline-flex; align-items: center; gap: 8px; justify-self: start; padding: 4px 12px 4px 8px; border: 1px solid; border-radius: 999px; font-size: 0.875rem; font-weight: 600; color: var(--ink); }
+.pg-agent-dot { width: 10px; height: 10px; border-radius: 50%; }
+.pg-meta { margin: 14px 0 0 !important; font-size: 0.875rem; color: var(--muted); }
+.pg-scene { margin-top: 28px; }
 
 /* Sections */
 .skills { margin-top: 40px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
@@ -197,3 +192,5 @@ h2 { font-size: clamp(1.875rem, 3.6vw, 2.5rem); }
 /* Sparks sit behind the content, so text and cards stay sharp while the effect plays. */
 .spark-field { z-index: 0; }
 .section--sparks > .wrap { position: relative; z-index: 1; }
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
