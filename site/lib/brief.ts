@@ -97,7 +97,7 @@ export interface BriefDeps {
   readonly fetchImpl: typeof fetch;
   readonly limiter: (key: string, now: number) => boolean;
   readonly now: () => number;
-  readonly model?: string;
+  readonly model?: string | undefined;
 }
 
 export interface BriefResult {
