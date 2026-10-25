@@ -104,6 +104,46 @@ describe('generateBrief', () => {
   });
 });
 
+describe('Gemini busy responses', () => {
+  it('retries a 503 and returns the answer when it recovers', async () => {
+    let calls = 0;
+    const fetchImpl = (async () => {
+      calls += 1;
+      if (calls === 1) {
+        return new Response('busy', { status: 503 });
+      }
+      return geminiReply('Recovered.')(String(calls), undefined);
+    }) as typeof fetch;
+    const sleeps: number[] = [];
+    const result = await generateBrief(request(validBody), deps({ fetchImpl, sleep: async (ms) => void sleeps.push(ms) }));
+    expect(result).toEqual({ status: 200, body: { text: 'Recovered.' } });
+    expect(calls).toBe(2);
+    expect(sleeps).toEqual([400]);
+  });
+
+  it('gives up after the retries and reports a 502', async () => {
+    let calls = 0;
+    const fetchImpl = (async () => {
+      calls += 1;
+      return new Response('busy', { status: 503 });
+    }) as typeof fetch;
+    const result = await generateBrief(request(validBody), deps({ fetchImpl, sleep: async () => undefined }));
+    expect(result.status).toBe(502);
+    expect(calls).toBe(3);
+  });
+
+  it('does not retry a 404 because the model is wrong, not busy', async () => {
+    let calls = 0;
+    const fetchImpl = (async () => {
+      calls += 1;
+      return new Response('gone', { status: 404 });
+    }) as typeof fetch;
+    const result = await generateBrief(request(validBody), deps({ fetchImpl, sleep: async () => undefined }));
+    expect(result.status).toBe(502);
+    expect(calls).toBe(1);
+  });
+});
+
 describe('parseBrief and prompts', () => {
   it('keeps only the agent and trimmed facts', () => {
     expect(parseBrief({ agent: 'builder', facts: ['  one  '], extra: 'ignored' })).toEqual({ agent: 'builder', facts: ['one'] });

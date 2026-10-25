@@ -98,6 +98,41 @@ export interface BriefDeps {
   readonly limiter: (key: string, now: number) => boolean;
   readonly now: () => number;
   readonly model?: string | undefined;
+  readonly sleep?: (milliseconds: number) => Promise<void>;
+}
+
+const RETRYABLE_STATUS = new Set([429, 500, 503]);
+const RETRY_DELAYS_MS = [400, 1200];
+
+function defaultSleep(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+/* Gemini answers 503 or 429 when a model is busy. Those are worth a short wait and another try. */
+async function callGemini(
+  deps: BriefDeps,
+  url: string,
+  body: string,
+): Promise<Response> {
+  const sleep = deps.sleep ?? defaultSleep;
+  let response = await deps.fetchImpl(url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-goog-api-key': deps.apiKey ?? '' },
+    body,
+  });
+  for (const delay of RETRY_DELAYS_MS) {
+    if (response.ok || !RETRYABLE_STATUS.has(response.status)) {
+      break;
+    }
+    console.warn(`brief: Gemini busy (${response.status}), retrying in ${delay} ms`);
+    await sleep(delay);
+    response = await deps.fetchImpl(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-goog-api-key': deps.apiKey ?? '' },
+      body,
+    });
+  }
+  return response;
 }
 
 export interface BriefResult {
@@ -138,17 +173,15 @@ export async function generateBrief(request: Request, deps: BriefDeps): Promise<
 
   try {
     const input = parseBrief(await readJson(request));
-    const upstream = await deps.fetchImpl(
-      `https://generativelanguage.googleapis.com/v1beta/models/${deps.model ?? DEFAULT_GEMINI_MODEL}:generateContent`,
-      {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-goog-api-key': deps.apiKey },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: [{ role: 'user', parts: [{ text: buildPrompt(input) }] }],
-          generationConfig: { maxOutputTokens: 160, temperature: 0.3 },
-        }),
-      },
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${deps.model ?? DEFAULT_GEMINI_MODEL}:generateContent`;
+    const upstream = await callGemini(
+      deps,
+      url,
+      JSON.stringify({
+        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents: [{ role: 'user', parts: [{ text: buildPrompt(input) }] }],
+        generationConfig: { maxOutputTokens: 160, temperature: 0.3 },
+      }),
     );
     if (!upstream.ok) {
       const detail = (await upstream.text()).slice(0, 300);
