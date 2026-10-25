@@ -65,17 +65,10 @@ function isGeminiReply(value: unknown): value is GeminiReply {
   return typeof value === 'object' && value !== null && typeof (value as { text?: unknown }).text === 'string';
 }
 
-/* Returns null on any failure, so the page briefing still stands when Gemini is unavailable. */
-export async function geminiBriefing(
-  agent: AgentId,
-  apiUrl: string | undefined,
-  fetchImpl: typeof fetch = fetch,
-): Promise<Briefing | null> {
-  if (!apiUrl) {
-    return null;
-  }
+/* Calls the same-site /api/brief route. Returns null on any failure, so the page briefing still stands. */
+export async function geminiBriefing(agent: AgentId, fetchImpl: typeof fetch = fetch): Promise<Briefing | null> {
   try {
-    const response = await fetchImpl(`${apiUrl.replace(/\/$/, '')}/brief`, {
+    const response = await fetchImpl('/api/brief', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ agent, facts: groundingFacts(agent) }),

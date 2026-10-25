@@ -1,6 +1,6 @@
 # Ram Villa · portfolio site
 
-A Next.js (App Router, static export) portfolio with a workspace where four agents each do a job on the page.
+A Next.js (App Router) portfolio hosted on Vercel with a workspace where four agents each do a job on the page.
 
 ## The agents
 
@@ -30,20 +30,20 @@ Every fact on the page lives in `content/portfolio.ts`. Change it there, and the
 
 ## Gemini (optional)
 
-Gemini is only used for a second, labelled briefing per agent ("Ask Gemini"). Without it the agents still work.
+Gemini writes a second, labelled briefing per agent ("Ask Gemini"). Without a key the button shows a notice and the agents still work.
 
-The key never reaches the browser. The browser calls a small Cloudflare Worker in `../agent-proxy`, which holds the key as a secret.
+The key is a server-only environment variable read by `app/api/brief/route.ts`. It never reaches the browser.
 
-1. Create a Gemini API key in Google AI Studio.
-2. In the GitHub repository settings, add these secrets:
-   - `GEMINI_API_KEY`: the Gemini key
-   - `CLOUDFLARE_API_TOKEN`: a token with Workers edit permission
-   - `CLOUDFLARE_ACCOUNT_ID`: your Cloudflare account ID
-3. Run the **Deploy agent proxy** workflow. It deploys the Worker and stores the key as its secret.
-4. Copy the Worker URL, then add it as a repository **variable** named `AGENT_API_URL`. Re-run the **Deploy site to GitHub Pages** workflow so the button appears.
+- Local: put `GEMINI_API_KEY=...` in `site/.env.local` (this file is git-ignored).
+- Vercel: Project → Settings → Environment Variables → add `GEMINI_API_KEY` for Production, Preview and Development.
 
-The Worker only accepts requests from `https://ramvilla1997.github.io`, limits each client to 20 requests a minute (per isolate, best effort), and rejects unknown agents and oversized input. Only the facts the site sends for one agent reach the model.
+The route only accepts same-origin requests, limits each client to 20 requests a minute (per serverless instance, best effort), and only sends the facts the site provides for one agent.
 
-## Deploy
+## Deploy on Vercel
 
-The **Deploy site to GitHub Pages** workflow builds `site/` and publishes it. In repository settings, set **Pages → Source → GitHub Actions**.
+1. In Vercel, choose **Add New → Project** and import `Ramvilla1997/my-portfolio`.
+2. Set **Root Directory** to `site`. Vercel detects Next.js automatically.
+3. Add the `GEMINI_API_KEY` environment variable (optional, see above).
+4. Deploy. Each push to `main` deploys to production, and each branch gets a preview URL.
+
+For production traffic, add a rate-limit rule in the Vercel Firewall for `/api/brief`. The in-code limit is per instance, so the firewall is the real backstop.

@@ -1,6 +1,6 @@
 # Ram Villa — Portfolio
 
-Personal portfolio site for Ram Villa, a full-stack engineer working with React, TypeScript, Node.js, and AWS. The new site lives in `site/` (Next.js, with four agents that work through the page). It is in `site/README.md`. The original single-page version is still in `index.html` until the new site is live.
+Personal portfolio site for Ram Villa, a full-stack engineer working with React, TypeScript, Node.js, and AWS. The site lives in `site/` (Next.js, hosted on Vercel, with four agents that work through the page). See `site/README.md`. The original single-page version is still in `index.html` until the new site is live.
 
 ## Run it
 

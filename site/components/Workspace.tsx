@@ -20,7 +20,6 @@ interface LogEntry {
   readonly source: 'page' | 'gemini' | 'notice';
 }
 
-const AGENT_API_URL = process.env.NEXT_PUBLIC_AGENT_API_URL;
 const LOG_LIMIT = 12;
 
 const PHASE_TEXT: Record<Phase, (role: AgentRole) => string> = {
@@ -136,7 +135,7 @@ export function Workspace() {
 
   const askGemini = useCallback(
     async (role: AgentRole) => {
-      const briefing: Briefing | null = await geminiBriefing(role.id, AGENT_API_URL);
+      const briefing: Briefing | null = await geminiBriefing(role.id);
       if (!alive.current) return;
       if (briefing) {
         append(briefing.agent, briefing.text, 'gemini');
@@ -205,11 +204,9 @@ export function Workspace() {
                     <button type="button" className="btn btn-primary" onClick={() => void runTask(role)} disabled={busy}>
                       {role.taskLabel}
                     </button>
-                    {AGENT_API_URL ? (
-                      <button type="button" className="btn" onClick={() => void askGemini(role)}>
-                        Ask Gemini
-                      </button>
-                    ) : null}
+                    <button type="button" className="btn" onClick={() => void askGemini(role)}>
+                      Ask Gemini
+                    </button>
                   </div>
                 </li>
               );

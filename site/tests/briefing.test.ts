@@ -31,18 +31,17 @@ describe('page briefings', () => {
 });
 
 describe('geminiBriefing', () => {
-  it('does not call the network when no API URL is configured', async () => {
-    const fetchSpy = vi.fn();
-    const result = await geminiBriefing('scout', undefined, fetchSpy as unknown as typeof fetch);
-    expect(result).toBeNull();
-    expect(fetchSpy).not.toHaveBeenCalled();
+  it('returns null when the route is unreachable or answers without text', async () => {
+    const fetchSpy = vi.fn(async () => new Response('{}', { status: 200 }));
+    const result = await geminiBriefing('scout', fetchSpy as unknown as typeof fetch);
+    expect(result).toEqual(null);
+    expect(fetchSpy).toHaveBeenCalledWith('/api/brief', expect.objectContaining({ method: 'POST' }));
   });
 
   it('returns Gemini text, trimmed, and labelled as Gemini', async () => {
     const fetchSpy = vi.fn(async () => new Response(JSON.stringify({ text: '  Six years of work.  ' }), { status: 200 }));
-    const result = await geminiBriefing('scout', 'https://api.example.com/', fetchSpy as unknown as typeof fetch);
+    const result = await geminiBriefing('scout', fetchSpy as unknown as typeof fetch);
     expect(result).toEqual({ agent: 'scout', text: 'Six years of work.', source: 'gemini' });
-    expect(fetchSpy).toHaveBeenCalledWith('https://api.example.com/brief', expect.objectContaining({ method: 'POST' }));
   });
 
   it('returns null on HTTP errors, bad bodies and network failures', async () => {
@@ -55,7 +54,7 @@ describe('geminiBriefing', () => {
       },
     ];
     for (const handler of cases) {
-      const result = await geminiBriefing('builder', 'https://api.example.com', handler as unknown as typeof fetch);
+      const result = await geminiBriefing('builder', handler as unknown as typeof fetch);
       expect(result).toBeNull();
     }
   });

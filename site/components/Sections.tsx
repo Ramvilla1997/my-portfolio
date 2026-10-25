@@ -81,7 +81,7 @@ export function Projects() {
           {projects.map((project) => (
             <article key={project.id} className={project.image ? 'card card--featured' : 'card'}>
               {project.image ? (
-                <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/${project.image}`} alt={`${project.title} screenshot`} width={1280} height={800} loading="lazy" />
+                <img src={`/${project.image}`} alt={`${project.title} screenshot`} width={1280} height={800} loading="lazy" />
               ) : null}
               <div className="card-body">
                 <p className="tag">{project.tag}</p>
