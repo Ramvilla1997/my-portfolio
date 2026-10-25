@@ -6,6 +6,7 @@ import { geminiBriefing, pageBriefing, type Briefing } from '../agents/briefing'
 import { ROOM_EFFECT, roster, rooms, timing, type AgentId, type AgentRole, type Point, type SectionId } from '../agents/roster';
 import { routeFromDesk, reversed, walkOf, workPointFor, type Walk } from '../agents/routes';
 import { useEffects } from './EffectsContext';
+import { OfficeScene } from './OfficeScene';
 
 type Phase = 'idle' | 'walking' | 'working' | 'done';
 
@@ -14,6 +15,7 @@ interface AgentState {
   readonly at: Point;
   readonly walk: Walk;
   readonly note: string | null;
+  readonly startedAt: number;
 }
 
 interface LogEntry {
@@ -52,19 +54,9 @@ const PHASE_TEXT: Record<Phase, (role: AgentRole) => string> = {
   done: () => 'Briefing filed',
 };
 
-/* A small icon above each agent while it works, so you can see what it is doing. */
-const ACTIVITY_ICON: Record<AgentId, React.ReactNode> = {
-  scout: (
-    <path d="M10.5 3a7.5 7.5 0 0 1 6 12l4.5 4.5-1.5 1.5-4.5-4.5A7.5 7.5 0 1 1 10.5 3Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Z" />
-  ),
-  archivist: <path d="M3 6h7l2 2h9v10H3V6Z" />,
-  builder: <path d="m14.7 6.3 3 3-8.4 8.4-3.6.6.6-3.6 8.4-8.4Zm4.2-1.5 1.5 1.5-2 2-1.5-1.5 2-2Z" />,
-  courier: <path d="M3 6h18v12H3V6Zm2 2v.5l7 4.5 7-4.5V8l-7 4.5L5 8Z" />,
-};
-
 function initialStates(): Record<AgentId, AgentState> {
   return Object.fromEntries(
-    roster.map((role) => [role.id, { phase: 'idle', at: role.desk, walk: walkOf([role.desk]), note: null }]),
+    roster.map((role) => [role.id, { phase: 'idle', at: role.desk, walk: walkOf([role.desk]), note: null, startedAt: 0 }]),
   ) as Record<AgentId, AgentState>;
 }
 
@@ -78,24 +70,6 @@ function randomBetween(minimum: number, maximum: number): number {
 
 function scrollToSection(section: SectionId, smooth: boolean): void {
   document.getElementById(section)?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
-}
-
-function AgentSprite({ color }: { readonly color: string }) {
-  return (
-    <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false" style={{ color }}>
-      <rect x="8" y="10" width="32" height="26" rx="10" fill="currentColor" />
-      <rect x="9.5" y="11.5" width="29" height="8" rx="6" fill="#ffffff" opacity="0.18" />
-      <circle cx="19" cy="22" r="3.4" fill="#fff" />
-      <circle cx="29" cy="22" r="3.4" fill="#fff" />
-      <circle cx="19.8" cy="22.4" r="1.5" fill="#15171c" />
-      <circle cx="29.8" cy="22.4" r="1.5" fill="#15171c" />
-      <path d="M18 29 Q24 33 30 29" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" />
-      <rect x="13" y="36" width="6" height="7" rx="3" fill="currentColor" />
-      <rect x="29" y="36" width="6" height="7" rx="3" fill="currentColor" />
-      <line x1="24" y1="10" x2="24" y2="4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-      <circle cx="24" cy="3" r="2.4" fill="currentColor" />
-    </svg>
-  );
 }
 
 export function Workspace() {
@@ -121,7 +95,7 @@ export function Workspace() {
   const move = useCallback((id: AgentId, phase: Phase, at: Point, walk: Walk, note?: string) => {
     setAgents((previous) => ({
       ...previous,
-      [id]: { phase, at, walk, note: note ?? previous[id].note },
+      [id]: { phase, at, walk, note: note ?? previous[id].note, startedAt: performance.now() },
     }));
   }, []);
 
@@ -255,6 +229,7 @@ export function Workspace() {
     [append],
   );
 
+  const workingCount = roster.filter((role) => agents[role.id].phase !== 'idle').length;
   const liveHead = live[0];
   const liveRole = liveHead ? roster.find((role) => role.id === liveHead.agent) : undefined;
 
@@ -279,56 +254,7 @@ export function Workspace() {
         </div>
 
         <div className="ws-grid">
-          <div className="ws-iso" aria-hidden="true">
-            <div className="ws-plane">
-              <div className="ws-hall" />
-              <div className="ws-table" />
-              {rooms.map((room) => (
-                <div
-                  key={room.id}
-                  className="ws-room"
-                  style={{ left: `${room.x}%`, top: `${room.y}%`, width: `${room.w}%`, height: `${room.h}%` }}
-                >
-                  <span className="ws-room-label">{room.label}</span>
-                </div>
-              ))}
-              {roster.map((role) => (
-                <div key={`desk-${role.id}`} className="ws-desk" style={{ left: `${role.desk.x}%`, top: `${role.desk.y + 3}%` }} />
-              ))}
-              {roster.map((role) => {
-                const state = agents[role.id];
-                const walking = state.phase === 'walking';
-                return (
-                  <motion.div
-                    key={role.id}
-                    className={`ws-agent${walking ? ' is-walking' : ''}`}
-                    style={{ color: role.color }}
-                    initial={false}
-                    animate={{
-                      left: state.walk.path.map((point) => `${point.x}%`),
-                      top: state.walk.path.map((point) => `${point.y}%`),
-                    }}
-                    transition={{ duration: reduced ? 0 : state.walk.seconds, times: state.walk.times, ease: 'linear' }}
-                  >
-                    <span className="ws-shadow" />
-                    <span className="ws-billboard">
-                      {state.phase === 'working' ? (
-                        <span className="ws-badge">
-                          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" focusable="false">
-                            {ACTIVITY_ICON[role.id]}
-                          </svg>
-                        </span>
-                      ) : null}
-                      <span className="ws-sprite">
-                        <AgentSprite color={role.color} />
-                      </span>
-                      <span className="ws-tag">{role.name}</span>
-                    </span>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
+          <OfficeScene agents={agents} reduced={reduced} working={workingCount} />
 
           <ul className="ws-roster">
             {roster.map((role) => {
