@@ -7,7 +7,7 @@ Scope: the live portfolio build at `main`, rendered at 1440 px (desktop) and 390
 | Area | Score | Evidence | Main gap |
 |---|---|---|---|
 | Visual identity | 7 | Serif display face with a warm accent on a near-black ground; a consistent look across sections | The accent is used in many places; it could be reserved for a few moments |
-| Typography | 7 | Instrument Serif for display, Inter Tight for text; clear hierarchy | Smallest body text is 12 px; desktop measure averages 28 characters per line in the about and case text |
+| Typography | 8 | Instrument Serif for display, Inter Tight for text; clear hierarchy; body measure 60 to 71 characters per line on desktop | Labels and metadata were below 14 px (fixed in the P1 pass) |
 | Colour | 7 | One accent and one neutral ground; consistent across sections | Contrast passes Lighthouse (accessibility 100), but the muted grey body copy is close to the limit |
 | Layout | 6 | Clear section rhythm, generous spacing | The hero's right half is empty; the dashboard case-study image renders much smaller than the SpendVoice image beside it |
 | Projects | 6 | Two case studies with real screenshots and stated decisions | The remaining project tiles repeat one template (tag, title, text, links) |
@@ -20,18 +20,18 @@ Scope: the live portfolio build at `main`, rendered at 1440 px (desktop) and 390
 - Lighthouse (local build): performance 88, accessibility 100, best practices 96, SEO 100. Largest Contentful Paint 2.8 s (target 2.5 s). Cumulative layout shift 0.
 - Overflow: 0 px horizontal scroll at both widths.
 - Console and page errors: none at either width.
-- Chars per line in the about and case text: 28 desktop, 21 phone. The comfortable range for body text is about 45 to 75.
+- Characters per line in the about and case text, measured with canvas text metrics: 60 to 71 on desktop, 46 to 51 on phone. The comfortable range is about 45 to 75, so the measure is fine. An earlier draft of this review reported 28 and 21 because it divided width by font size, which measures em units, not characters. That finding is withdrawn.
 - Phone: the case-study section is about 3,200 px tall, the longest section on the page.
 
 ## Ranked backlog
 
 Each item has acceptance criteria so it can be checked without judgement.
 
-**P1, fix now**
-1. **Dashboard case-study image undersized.** Acceptance: the dashboard image fills its column at desktop width, at the same visual weight as the SpendVoice image.
-2. **Measure too narrow.** Acceptance: about and case-study body text averages 45 to 75 characters per line at desktop width, and stays readable at phone width.
-3. **Smallest text is 12 px.** Acceptance: no body or label text below 14 px.
-4. **LCP 2.8 s.** Acceptance: LCP at or below 2.5 s on the local build, by showing the hero headline immediately rather than fading it in.
+**P1, fixed in the P1 pass**
+1. **Case-study figures collapsed before their images loaded.** The phone figure had zero width until its lazy image arrived, which caused layout shift. The dashboard image was not actually undersized; my full-page capture simply hadn't loaded it. Result: both figures hold a fixed width. Layout shift is now 0.005.
+2. ~~Measure too narrow.~~ Withdrawn. The measure is 60 to 71 characters per line on desktop.
+3. **Text below 14 px.** Labels, metadata, and buttons raised to at least 14 px.
+4. **LCP 2.8 s.** Fixed by removing the hero's opacity fade and self-hosting the two font families, which removed a cross-origin font request. Result: LCP 1.8 s, performance 99.
 
 **P2, before the redesign**
 5. **Empty hero composition.** Acceptance: the hero's right side holds a deliberate element, such as a project image or a typographic detail, or the hero is composed around the left column on purpose.
