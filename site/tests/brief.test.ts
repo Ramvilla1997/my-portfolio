@@ -129,7 +129,7 @@ describe('Gemini busy responses', () => {
     }) as typeof fetch;
     const result = await generateBrief(request(validBody), deps({ fetchImpl, sleep: async () => undefined }));
     expect(result.status).toBe(502);
-    expect(calls).toBe(3);
+    expect(calls).toBe(6);
   });
 
   it('does not retry a 429, because retrying spends more of the same quota', async () => {
@@ -152,6 +152,22 @@ describe('Gemini busy responses', () => {
     const result = await generateBrief(request(validBody), deps({ fetchImpl, sleep: async () => undefined }));
     expect(result.status).toBe(502);
     expect(calls).toBe(1);
+  });
+});
+
+describe('model fallback', () => {
+  it('switches to the fallback model when the main model stays busy', async () => {
+    const urls: string[] = [];
+    const fetchImpl = (async (url: string | URL | Request) => {
+      urls.push(String(url));
+      if (String(url).includes('gemini-3.1-flash-lite')) {
+        return new Response('busy', { status: 503 });
+      }
+      return geminiReply('From the fallback.')(url as string, undefined);
+    }) as typeof fetch;
+    const result = await generateBrief(request(validBody), deps({ fetchImpl, sleep: async () => undefined }));
+    expect(result).toEqual({ status: 200, body: { text: 'From the fallback.' } });
+    expect(urls.at(-1)).toContain('gemini-3-flash:generateContent');
   });
 });
 

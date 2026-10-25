@@ -6,7 +6,9 @@ export const MAX_FACTS = 30;
 export const MAX_FACT_LENGTH = 400;
 export const RATE_LIMIT = 20;
 export const RATE_WINDOW_MS = 60_000;
-export const DEFAULT_GEMINI_MODEL = 'gemini-3.8-flash';
+export const DEFAULT_GEMINI_MODEL = 'gemini-3.1-flash-lite';
+/* Tried in order when the main model stays busy. Each one has its own free quota. */
+export const FALLBACK_GEMINI_MODELS: readonly string[] = ['gemini-3-flash'];
 
 const ROLE_TASK: Readonly<Record<AgentId, string>> = {
   scout: 'Write two sentences about the person background and core skills.',
@@ -109,6 +111,10 @@ function defaultSleep(milliseconds: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
+function modelUrl(model: string): string {
+  return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+}
+
 /* Gemini answers 503 when a model is overloaded. That is worth a short wait and another try. */
 async function callGemini(
   deps: BriefDeps,
@@ -174,16 +180,20 @@ export async function generateBrief(request: Request, deps: BriefDeps): Promise<
 
   try {
     const input = parseBrief(await readJson(request));
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${deps.model ?? DEFAULT_GEMINI_MODEL}:generateContent`;
-    const upstream = await callGemini(
-      deps,
-      url,
-      JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [{ role: 'user', parts: [{ text: buildPrompt(input) }] }],
-        generationConfig: { maxOutputTokens: 160, temperature: 0.3 },
-      }),
-    );
+    const body = JSON.stringify({
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ role: 'user', parts: [{ text: buildPrompt(input) }] }],
+      generationConfig: { maxOutputTokens: 160, temperature: 0.3 },
+    });
+    const models = [...new Set([deps.model ?? DEFAULT_GEMINI_MODEL, ...FALLBACK_GEMINI_MODELS])];
+    let upstream = await callGemini(deps, modelUrl(models[0] ?? DEFAULT_GEMINI_MODEL), body);
+    for (const model of models.slice(1)) {
+      if (upstream.ok || !RETRYABLE_STATUS.has(upstream.status)) {
+        break;
+      }
+      console.warn(`brief: switching to ${model} after ${upstream.status}`);
+      upstream = await callGemini(deps, modelUrl(model), body);
+    }
     if (!upstream.ok) {
       const detail = (await upstream.text()).slice(0, 300);
       console.error(`brief: Gemini responded ${upstream.status}: ${detail}`);
