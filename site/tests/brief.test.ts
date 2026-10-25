@@ -167,7 +167,7 @@ describe('model fallback', () => {
     }) as typeof fetch;
     const result = await generateBrief(request(validBody), deps({ fetchImpl, sleep: async () => undefined }));
     expect(result).toEqual({ status: 200, body: { text: 'From the fallback.' } });
-    expect(urls.at(-1)).toContain('gemini-3-flash:generateContent');
+    expect(urls.at(-1)).toContain('gemini-3.8-flash:generateContent');
   });
 });
 

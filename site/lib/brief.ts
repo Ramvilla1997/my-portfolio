@@ -8,7 +8,7 @@ export const RATE_LIMIT = 20;
 export const RATE_WINDOW_MS = 60_000;
 export const DEFAULT_GEMINI_MODEL = 'gemini-3.1-flash-lite';
 /* Tried in order when the main model stays busy. Each one has its own free quota. */
-export const FALLBACK_GEMINI_MODELS: readonly string[] = ['gemini-3-flash'];
+export const FALLBACK_GEMINI_MODELS: readonly string[] = ['gemini-3.8-flash'];
 
 const ROLE_TASK: Readonly<Record<AgentId, string>> = {
   scout: 'Write two sentences about the person background and core skills.',
