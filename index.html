@@ -15,7 +15,7 @@
 
         @font-face {
             font-family: neue regrade;
-            src: url('https://raw.githubusercontent.com/Ramvilla1997/my-portfolio/blob/main/neue_regrade/Neue%20Regrade%20Variable.ttf') format('truetype');
+            src: url('https://raw.githubusercontent.com/Ramvilla1997/my-portfolio/main/neue_regrade/Neue%20Regrade%20Variable.ttf') format('truetype');
             font-weight: 300 800;
             font-style: normal;
             font-display: swap;
@@ -464,6 +464,33 @@
 
         .project-link:hover {
             color: var(--black);
+        }
+
+
+        /* Experience cards show full text; project cards can hold two links side by side. */
+        #experience .project-description {
+            display: block;
+            -webkit-line-clamp: unset;
+            overflow: visible;
+            text-align: left;
+        }
+
+        #experience .project-title {
+            font-size: clamp(1.1rem, 2vw, 1.4rem);
+            text-align: left;
+        }
+
+        .project-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding-top: 10px;
+            border-top: 1px solid var(--secondary);
+        }
+
+        .project-links .project-link {
+            border-top: none;
+            padding-top: 0;
         }
 
         /* Let's Connect Section */
@@ -1055,6 +1082,8 @@
             <ul class="nav-list">
                 <li><a href="#hero">Home</a></li>
                 <li><a href="#about">About</a></li>
+                <li><a href="#experience">Experience</a></li>
+                <li><a href="#projects">Projects</a></li>
                 <li><a href="#connect">Connect</a></li>
             </ul>
         </nav>
@@ -1065,7 +1094,7 @@
 
         <div class="heading-container">
             <h1 class="main-heading">Hi, I'm Ram Villa.</h1>
-            <h2 class="sub-heading ">I'm a <Span style="color: var(--white);">Software + Data</Span> Engineer</h2>
+            <h2 class="sub-heading ">I'm a Senior <Span style="color: var(--white);">Full-Stack</Span> Engineer</h2>
             <h3 class="welcome-text">Welcome to my portfolio!</h3>
 
             <!-- <a href="./Ram Villa.pdf" download="RamVilla_Resume.pdf" class="button-mask">
@@ -1073,7 +1102,7 @@
             </a> -->
             <div class="buttons-container">
                 <!-- <a href="https://raw.githubusercontent.com/Ramvilla1997/my-portfolio/main/assets/Ram%20-%20FSL.pdf" -->
-                <a href=" https://raw.githubusercontent.com/Ramvilla1997/my-portfolio/main/assets/Ram%20-%20Resume.pdf"
+                <a href="https://raw.githubusercontent.com/Ramvilla1997/my-portfolio/main/assets/Ram%20-%20Resume.pdf"
                 download="RamVilla_Resume.pdf" class="button-mask">
                     <button class="button-black button-download">Download Resume</button>
                 </a>
@@ -1090,118 +1119,156 @@
     <!-- About Me Section -->
     <section id="about" class="about-me section">
         <h3>About Me</h3>
-        <p>I'm a Senior Data Engineer and Full Stack Developer with over 5 years of experience in building scalable,
-            cloud-based solutions using AWS, Python, and modern JavaScript frameworks like React and Node.js. With a
-            Master of Engineering from the University of Ottawa and hands-on expertise in data engineering, ETL
-            processes, and front-end development, I have a proven track record of delivering high-performance,
-            user-centric applications.</p>
+        <p>Senior full-stack engineer with 6+ years building production web applications in regulated environments,
+            across healthcare and fintech. I build React and TypeScript frontends on serverless AWS backends (Lambda,
+            Glue, DynamoDB, EventBridge), and design releases that can be rolled back safely. Recently I built an LLM
+            chatbot on AWS Bedrock and AI developer tooling used in daily development. I build to AODA and WCAG
+            accessibility standards and work with health data under PHIPA. Master of Engineering, University of
+            Ottawa. AWS Certified Developer – Associate.</p>
     </section>
 
     <section id="skills" class="skills section">
         <h3>My Expertise Areas</h3>
         <div class="skills-grid">
-            <div class="skill-card">
-                <div class="skill-title">Front-End Development</div>
-                <p class="skill-description">Interactive UIs, modern web applications, and responsive designs.</p>
+            <div class="skill-card" id="frontend-card">
+                <div class="skill-title">Frontend</div>
+                <p class="skill-description">React and TypeScript apps that are accessible and fast.</p>
                 <div class="expanded-content">
-                    <h4>Front-End Skills</h4>
+                    <h4>Frontend Skills</h4>
                     <ul>
-                        <li>HTML5 / CSS3 / JavaScript</li>
-                        <li>React.js / Vue.js</li>
-                        <li>Responsive Web Design</li>
-                        <li>Bootstrap / Tailwind CSS</li>
+                        <li>TypeScript / JavaScript</li>
+                        <li>React / Angular / React Native</li>
+                        <li>Redux / React Hook Form / Zod</li>
+                        <li>Vite / Bootstrap</li>
+                        <li>AODA and WCAG accessibility, i18n</li>
                     </ul>
                 </div>
             </div>
 
-            <div class="skill-card">
-                <div class="skill-title">Full Stack Development</div>
-                <p class="skill-description">Complete solutions from front-end to back-end.</p>
+            <div class="skill-card" id="backend-card">
+                <div class="skill-title">Backend and Data</div>
+                <p class="skill-description">APIs, data stores, and real-time services.</p>
                 <div class="expanded-content">
-                    <h4>Full Stack Skills</h4>
+                    <h4>Backend Skills</h4>
                     <ul>
-                        <li>Node.js / Express.js</li>
-                        <li>MongoDB / SQL</li>
-                        <li>RESTful APIs / GraphQL</li>
-                        <li>Authentication / Authorization</li>
+                        <li>Node.js / Express / REST / WebSocket</li>
+                        <li>PostgreSQL / DynamoDB / Redis</li>
+                        <li>Python / Java</li>
+                        <li>FHIR / OAuth 2.0 / OIDC</li>
+                        <li>Jest / Cypress</li>
                     </ul>
                 </div>
             </div>
 
-            <div class="skill-card">
-                <div class="skill-title">Data Engineering</div>
-                <p class="skill-description">Data pipelines, storage solutions, and cloud engineering.</p>
+            <div class="skill-card" id="cloud-card">
+                <div class="skill-title">AWS and AI</div>
+                <p class="skill-description">Serverless AWS and AI tooling in production.</p>
                 <div class="expanded-content">
-                    <h4>Data Engineering Skills</h4>
+                    <h4>Cloud and AI Skills</h4>
                     <ul>
-                        <li>AWS (S3, Lambda, RDS)</li>
-                        <li>ETL / Data Pipelines</li>
-                        <li>Python / PySpark</li>
-                        <li>Data Warehousing</li>
+                        <li>Lambda / API Gateway / EventBridge / SQS / SNS</li>
+                        <li>S3 / Glue / CloudFront / SAM</li>
+                        <li>Secrets Manager / SSM Parameter Store</li>
+                        <li>Bedrock / RAG / MCP</li>
+                        <li>Docker / GitHub Actions / Jenkins</li>
                     </ul>
                 </div>
             </div>
+
         </div>
     </section>
 
-
+    <!-- Experience Section -->
+    <section id="experience" class="projects section">
+        <h3>Experience</h3>
+        <div class="projects-grid">
+            <div class="project-card">
+                <div class="project-title">Senior Software Engineer (Full-Stack) · Ontario Health</div>
+                <p class="project-description">Feb 2025 – Present · Ottawa, ON</p>
+                <p class="project-description">Built the ONE Health chatbot with RAG over Ontario Health documents
+                    using Claude on AWS Bedrock. Co-designed an S3, EventBridge, SQS, Lambda, and Glue ingestion
+                    pipeline into versioned DynamoDB tables. Migrated workspaces from Angular to React with no feature
+                    freeze, and cut provider-search latency from 850 ms to 120 ms.</p>
+            </div>
+            <div class="project-card">
+                <div class="project-title">Full-Stack Developer · Independent Projects</div>
+                <p class="project-description">Jun 2024 – Jan 2025 · Ottawa, ON</p>
+                <p class="project-description">Built PDF Chat for asking questions over PDF documents, Screenshot to
+                    Code, a real-time collaborative whiteboard, and a task CLI in Node.js.</p>
+            </div>
+            <div class="project-card">
+                <div class="project-title">Software Engineer (Co-op) · University of Ottawa</div>
+                <p class="project-description">May 2023 – Apr 2024 · Ottawa, ON</p>
+                <p class="project-description">Built React features with Hooks and Redux for a healthcare app handling
+                    patient data under PHIPA, and shipped through Jenkins and GitHub Actions pipelines.</p>
+            </div>
+            <div class="project-card">
+                <div class="project-title">Senior Programmer · Ionixx Technologies</div>
+                <p class="project-description">Dec 2021 – Aug 2022 · India</p>
+                <p class="project-description">Built React and React Native screens and Node.js APIs for Bitsian, a
+                    multi-exchange crypto trading platform, and Voyaj, a community travel app. Implemented JWT and OAuth
+                    authentication.</p>
+            </div>
+            <div class="project-card">
+                <div class="project-title">Junior Software Developer · Sims Healthcare</div>
+                <p class="project-description">Jul 2018 – Dec 2021 · Hyderabad, India</p>
+                <p class="project-description">Built an IoT patient-monitoring system with React Native, Node.js, and
+                    PostgreSQL, including 12-lead ECG waveform streaming and real-time provider-patient communication
+                    over WebSocket.</p>
+            </div>
+        </div>
+    </section>
 
     <!-- Projects Section with Cards -->
     <section id="projects" class="projects section">
         <h3>Projects</h3>
         <div class="projects-grid">
-
-            <!-- Project 1: Cloud-Based Healthcare Management System -->
             <div class="project-card">
-                <div class="project-title">Cloud-Based Healthcare Management System</div>
-                <p class="project-description">Architected and developed a cloud-based system for healthcare providers,
-                    improving patient data management and query performance by 35% using AWS Lambda and RDS.</p>
-                <a href="#" class="project-link">View Project</a>
+                <div class="project-title">SpendVoice</div>
+                <p class="project-description">Track expenses by voice or text. Installable and offline, with data kept on the device.</p>
+                <div class="project-links"><a href="https://ramvilla1997.github.io/spendvoice/" class="project-link" target="_blank" rel="noopener">Live demo</a> <a href="https://github.com/Ramvilla1997/spendvoice" class="project-link" target="_blank" rel="noopener">Code</a></div>
             </div>
 
-            <!-- Project 2: Real-Time Log Processing Pipeline -->
             <div class="project-card">
-                <div class="project-title">Real-Time Log Processing Pipeline</div>
-                <p class="project-description">Built a robust ETL pipeline for real-time log processing and analytics,
-                    improving operational efficiency by 40%. Utilized Kafka and PySpark for data streaming and AWS S3
-                    for storage.</p>
-                <a href="#" class="project-link">View Project</a>
+                <div class="project-title">Analytics Dashboard</div>
+                <p class="project-description">KPIs, a revenue chart, and a filterable order table. React, TanStack Query, Zod.</p>
+                <div class="project-links"><a href="https://ramvilla1997.github.io/react-analytics-dashboard/" class="project-link" target="_blank" rel="noopener">Live demo</a> <a href="https://github.com/Ramvilla1997/react-analytics-dashboard" class="project-link" target="_blank" rel="noopener">Code</a></div>
             </div>
 
-            <!-- Project 3: Interactive Data Dashboard for E-commerce -->
             <div class="project-card">
-                <div class="project-title">Interactive Data Dashboard for E-commerce</div>
-                <p class="project-description">Developed an interactive data visualization dashboard to track key
-                    e-commerce performance metrics, leveraging React.js for the frontend and MongoDB for backend
-                    storage.</p>
-                <a href="https://voyaj.com" class="project-link">View Project</a>
+                <div class="project-title">Document Q&amp;A (PDF Chat)</div>
+                <p class="project-description">Ask questions about your documents and get answers that cite their sources.</p>
+                <div class="project-links"><a href="https://github.com/Ramvilla1997/rag-document-qa" class="project-link" target="_blank" rel="noopener">Code</a></div>
             </div>
 
-            <!-- Project 4: Financial Market Data Pipeline -->
             <div class="project-card">
-                <div class="project-title">Real-Time Financial Market Data Pipeline</div>
-                <p class="project-description">Developed a real-time data pipeline using Apache Kafka and Spark for
-                    financial market data analysis. The system processed millions of records per second, providing
-                    real-time insights to traders.</p>
-                <a href="#" class="project-link">View Project</a>
+                <div class="project-title">Natural Language to SQL</div>
+                <p class="project-description">Plain-English questions turned into safe, read-only SQL over Postgres.</p>
+                <div class="project-links"><a href="https://github.com/Ramvilla1997/nl-to-sql-assistant" class="project-link" target="_blank" rel="noopener">Code</a></div>
             </div>
 
-            <!-- Project 5: Yelp Review Sentiment Analysis -->
             <div class="project-card">
-                <div class="project-title">Yelp Review Sentiment Analysis</div>
-                <p class="project-description">Designed an NLP-driven sentiment analysis tool for Yelp reviews,
-                    identifying trends in user feedback using Python and PySpark. The tool increased customer
-                    satisfaction insights by 20%.</p>
-                <a href="#" class="project-link">View Project</a>
+                <div class="project-title">MCP Tool Server</div>
+                <p class="project-description">An MCP server that gives AI clients sandboxed, read-only tools.</p>
+                <div class="project-links"><a href="https://github.com/Ramvilla1997/mcp-tool-server" class="project-link" target="_blank" rel="noopener">Code</a></div>
             </div>
 
-            <!-- Project 6: Full-Stack E-commerce Platform -->
             <div class="project-card">
-                <div class="project-title">Full-Stack E-commerce Platform</div>
-                <p class="project-description">Built a scalable e-commerce platform with user authentication, shopping
-                    cart, and payment gateway integration using React, Node.js, and MongoDB. Enabled real-time sales
-                    tracking and product inventory management.</p>
-                <a href="#" class="project-link">View Project</a>
+                <div class="project-title">AI Developer Tooling (Ontario Health)</div>
+                <p class="project-description">Copilot agents and MCP servers used in daily development. Internal work, no public code.</p>
+                <div class="project-links"><span class="project-link">Internal</span></div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-title">Jarvis (in progress)</div>
+                <p class="project-description">Three agents turn a Jira ticket into a plan, code, and a PR, with approval at each step.</p>
+                <div class="project-links"><span class="project-link">In progress</span></div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-title">AI Trading Simulator (in progress)</div>
+                <p class="project-description">Paper trading on real market data with AI news analysis. No real money.</p>
+                <div class="project-links"><span class="project-link">In progress</span></div>
             </div>
 
         </div>
@@ -1220,13 +1287,13 @@
             <div class="contact-item">
                 <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn Icon"
                     class="contact-icon">
-                <a href="https://www.linkedin.com/in/ramvilla/" target="_blank">LinkedIn</a>
+                <a href="https://www.linkedin.com/in/ram-villa/" target="_blank">LinkedIn</a>
             </div>
 
-            <!-- <div class="contact-item">
-            <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" alt="GitHub Icon" class="contact-icon">
-            <a href="https://github.com/ramvilla" target="_blank">GitHub</a>
-        </div> -->
+            <div class="contact-item">
+                <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" alt="GitHub Icon" class="contact-icon">
+                <a href="https://github.com/Ramvilla1997" target="_blank">GitHub</a>
+            </div>
 
             <div class="contact-item">
                 <img src="https://cdn-icons-png.flaticon.com/512/732/732200.png" alt="Gmail Icon" class="contact-icon">
