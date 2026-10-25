@@ -18,13 +18,12 @@ interface OfficeSceneProps {
   readonly agents: Record<AgentId, SceneAgent>;
   readonly activity: Partial<Record<AgentId, string>>;
   readonly reduced: boolean;
-  readonly working: number;
 }
 
 const HALF_VIEW = 8.4;
 const LABEL_HEIGHT = 2.9;
 
-export function OfficeScene({ agents, activity, reduced, working }: OfficeSceneProps) {
+export function OfficeScene({ agents, activity, reduced }: OfficeSceneProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const labelRefs = useRef<Partial<Record<AgentId, HTMLDivElement | null>>>({});
   const agentsRef = useRef(agents);
@@ -127,6 +126,7 @@ export function OfficeScene({ agents, activity, reduced, working }: OfficeSceneP
           const screenX = ((projected.x + 1) / 2) * width;
           const screenY = ((1 - projected.y) / 2) * height;
           label.style.transform = `translate(${screenX.toFixed(1)}px, ${screenY.toFixed(1)}px) translate(-50%, -100%)`;
+          label.style.opacity = agent.phase === 'idle' ? '0' : '1';
         }
       }
 
@@ -162,10 +162,6 @@ export function OfficeScene({ agents, activity, reduced, working }: OfficeSceneP
           {activity[role.id] ? <span className="office-activity">{activity[role.id]}</span> : null}
         </div>
       ))}
-      <div className="office-status">
-        <span className="office-dot" style={{ background: working > 0 ? '#4ade80' : '#6b7280' }} />
-        Agents working: {working}
-      </div>
     </div>
   );
 }
