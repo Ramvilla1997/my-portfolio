@@ -1,14 +1,14 @@
 # Ram Villa — Portfolio
 
-Personal portfolio site for Ram Villa, a full-stack engineer working with React, TypeScript, Node.js, and AWS. It is a single static page (`index.html`) with the resume, experience, and contact links.
+Personal portfolio site for Ram Villa, a full-stack engineer working with React, TypeScript, Node.js, and AWS. The new site lives in `site/` (Next.js, with four agents that work through the page). It is in `site/README.md`. The original single-page version is still in `index.html` until the new site is live.
 
 ## Run it
 
-Open `index.html` in a browser, or serve the folder:
-
 ```bash
-npx serve .
+cd site && npm ci && npm run dev
 ```
+
+The old single page can still be opened directly: `npx serve .`
 
 ## Projects
 
