@@ -9,6 +9,8 @@ const limiter = createLimiter();
 export async function POST(request: Request) {
   const result = await generateBrief(request, {
     apiKey: process.env.GEMINI_API_KEY,
+    groqKey: process.env.GROQ_API_KEY,
+    groqModel: process.env.GROQ_MODEL,
     fetchImpl: fetch,
     limiter,
     now: () => Date.now(),

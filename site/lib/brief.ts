@@ -6,8 +6,12 @@ export const MAX_FACTS = 30;
 export const MAX_FACT_LENGTH = 400;
 export const RATE_LIMIT = 20;
 export const RATE_WINDOW_MS = 60_000;
+
+export const DEFAULT_GROQ_MODEL = 'llama-3.3-70b-versatile';
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
 export const DEFAULT_GEMINI_MODEL = 'gemini-3.1-flash-lite';
-/* Tried in order when the main model stays busy. Each one has its own free quota. */
+/* Tried in order when the main Gemini model stays busy. Each one has its own free quota. */
 export const FALLBACK_GEMINI_MODELS: readonly string[] = ['gemini-3.8-flash'];
 
 const ROLE_TASK: Readonly<Record<AgentId, string>> = {
@@ -80,6 +84,11 @@ export function extractText(data: unknown): string {
     .slice(0, 600);
 }
 
+export function extractGroqText(data: unknown): string {
+  const content = (data as { choices?: { message?: { content?: unknown } }[] } | null)?.choices?.[0]?.message?.content;
+  return typeof content === 'string' ? content.trim().slice(0, 600) : '';
+}
+
 /* Best-effort limiter per client address. Each serverless instance keeps its own counts. */
 export function createLimiter(limit = RATE_LIMIT, windowMs = RATE_WINDOW_MS): (key: string, now: number) => boolean {
   const hits = new Map<string, number[]>();
@@ -96,6 +105,8 @@ export function createLimiter(limit = RATE_LIMIT, windowMs = RATE_WINDOW_MS): (k
 
 export interface BriefDeps {
   readonly apiKey: string | undefined;
+  readonly groqKey?: string | undefined;
+  readonly groqModel?: string | undefined;
   readonly fetchImpl: typeof fetch;
   readonly limiter: (key: string, now: number) => boolean;
   readonly now: () => number;
@@ -103,49 +114,12 @@ export interface BriefDeps {
   readonly sleep?: (milliseconds: number) => Promise<void>;
 }
 
-/* 429 means the key's quota is spent. Retrying only adds requests to that quota, so it is not retried. */
-const RETRYABLE_STATUS = new Set([500, 503]);
-const RETRY_DELAYS_MS = [400, 1200];
-
-function defaultSleep(milliseconds: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds));
-}
-
-function modelUrl(model: string): string {
-  return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-}
-
-/* Gemini answers 503 when a model is overloaded. That is worth a short wait and another try. */
-async function callGemini(
-  deps: BriefDeps,
-  url: string,
-  body: string,
-): Promise<Response> {
-  const sleep = deps.sleep ?? defaultSleep;
-  let response = await deps.fetchImpl(url, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-goog-api-key': deps.apiKey ?? '' },
-    body,
-  });
-  for (const delay of RETRY_DELAYS_MS) {
-    if (response.ok || !RETRYABLE_STATUS.has(response.status)) {
-      break;
-    }
-    console.warn(`brief: Gemini busy (${response.status}), retrying in ${delay} ms`);
-    await sleep(delay);
-    response = await deps.fetchImpl(url, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-goog-api-key': deps.apiKey ?? '' },
-      body,
-    });
-  }
-  return response;
-}
-
 export interface BriefResult {
   readonly status: number;
   readonly body: { readonly text: string } | { readonly error: string };
 }
+
+type Outcome = { readonly ok: true; readonly text: string } | { readonly ok: false };
 
 async function readJson(request: Request): Promise<unknown> {
   const length = Number(request.headers.get('content-length') ?? '0');
@@ -163,6 +137,93 @@ async function readJson(request: Request): Promise<unknown> {
   }
 }
 
+const RETRYABLE_STATUS = new Set([500, 503]);
+const RETRY_DELAYS_MS = [400, 1200];
+
+function defaultSleep(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+function modelUrl(model: string): string {
+  return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+}
+
+/* Gemini answers 503 when a model is overloaded. That is worth a short wait and another try. */
+async function callGemini(deps: BriefDeps, url: string, body: string): Promise<Response> {
+  const sleep = deps.sleep ?? defaultSleep;
+  const send = () =>
+    deps.fetchImpl(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-goog-api-key': deps.apiKey ?? '' },
+      body,
+    });
+  let response = await send();
+  for (const delay of RETRY_DELAYS_MS) {
+    if (response.ok || !RETRYABLE_STATUS.has(response.status)) {
+      break;
+    }
+    console.warn(`brief: Gemini busy (${response.status}), retrying in ${delay} ms`);
+    await sleep(delay);
+    response = await send();
+  }
+  return response;
+}
+
+async function askGemini(deps: BriefDeps, input: BriefInput): Promise<Outcome> {
+  const body = JSON.stringify({
+    systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    contents: [{ role: 'user', parts: [{ text: buildPrompt(input) }] }],
+    generationConfig: { maxOutputTokens: 160, temperature: 0.3 },
+  });
+  const models = [...new Set([deps.model ?? DEFAULT_GEMINI_MODEL, ...FALLBACK_GEMINI_MODELS])];
+  let upstream = await callGemini(deps, modelUrl(models[0] ?? DEFAULT_GEMINI_MODEL), body);
+  for (const model of models.slice(1)) {
+    if (upstream.ok || !RETRYABLE_STATUS.has(upstream.status)) {
+      break;
+    }
+    console.warn(`brief: switching to ${model} after ${upstream.status}`);
+    upstream = await callGemini(deps, modelUrl(model), body);
+  }
+  if (!upstream.ok) {
+    console.error(`brief: Gemini responded ${upstream.status}: ${(await upstream.text()).slice(0, 300)}`);
+    return { ok: false };
+  }
+  const text = extractText(await upstream.json());
+  if (text.length === 0) {
+    console.error('brief: Gemini returned no text');
+    return { ok: false };
+  }
+  return { ok: true, text };
+}
+
+/* Groq is tried first when a key is set. Any failure falls through to Gemini. */
+async function askGroq(deps: BriefDeps, input: BriefInput, groqKey: string): Promise<Outcome> {
+  try {
+    const response = await deps.fetchImpl(GROQ_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${groqKey}` },
+      body: JSON.stringify({
+        model: deps.groqModel ?? DEFAULT_GROQ_MODEL,
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: buildPrompt(input) },
+        ],
+        max_tokens: 160,
+        temperature: 0.3,
+      }),
+    });
+    if (!response.ok) {
+      console.warn(`brief: Groq responded ${response.status}`);
+      return { ok: false };
+    }
+    const text = extractGroqText(await response.json());
+    return text.length > 0 ? { ok: true, text } : { ok: false };
+  } catch (error) {
+    console.warn('brief: Groq request failed', error);
+    return { ok: false };
+  }
+}
+
 /* Same-origin only: the browser always sends Origin on POST, so a foreign page cannot use this route. */
 export async function generateBrief(request: Request, deps: BriefDeps): Promise<BriefResult> {
   const origin = request.headers.get('origin');
@@ -173,38 +234,27 @@ export async function generateBrief(request: Request, deps: BriefDeps): Promise<
   if (!deps.limiter(client, deps.now())) {
     return { status: 429, body: { error: 'Too many requests. Try again in a minute.' } };
   }
-  if (!deps.apiKey) {
-    console.error('brief: GEMINI_API_KEY is not set in this environment');
+  if (!deps.groqKey && !deps.apiKey) {
+    console.error('brief: neither GROQ_API_KEY nor GEMINI_API_KEY is set in this environment');
     return { status: 503, body: { error: 'Briefings are not configured.' } };
   }
 
   try {
     const input = parseBrief(await readJson(request));
-    const body = JSON.stringify({
-      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents: [{ role: 'user', parts: [{ text: buildPrompt(input) }] }],
-      generationConfig: { maxOutputTokens: 160, temperature: 0.3 },
-    });
-    const models = [...new Set([deps.model ?? DEFAULT_GEMINI_MODEL, ...FALLBACK_GEMINI_MODELS])];
-    let upstream = await callGemini(deps, modelUrl(models[0] ?? DEFAULT_GEMINI_MODEL), body);
-    for (const model of models.slice(1)) {
-      if (upstream.ok || !RETRYABLE_STATUS.has(upstream.status)) {
-        break;
+    if (deps.groqKey) {
+      const groq = await askGroq(deps, input, deps.groqKey);
+      if (groq.ok) {
+        return { status: 200, body: { text: groq.text } };
       }
-      console.warn(`brief: switching to ${model} after ${upstream.status}`);
-      upstream = await callGemini(deps, modelUrl(model), body);
     }
-    if (!upstream.ok) {
-      const detail = (await upstream.text()).slice(0, 300);
-      console.error(`brief: Gemini responded ${upstream.status}: ${detail}`);
+    if (!deps.apiKey) {
       return { status: 502, body: { error: 'The briefing service did not answer.' } };
     }
-    const text = extractText(await upstream.json());
-    if (text.length === 0) {
-      console.error('brief: Gemini returned no text');
-      return { status: 502, body: { error: 'The briefing service returned nothing.' } };
+    const gemini = await askGemini(deps, input);
+    if (gemini.ok) {
+      return { status: 200, body: { text: gemini.text } };
     }
-    return { status: 200, body: { text } };
+    return { status: 502, body: { error: 'The briefing service did not answer.' } };
   } catch (error) {
     if (error instanceof BriefError) {
       return { status: error.status, body: { error: error.message } };

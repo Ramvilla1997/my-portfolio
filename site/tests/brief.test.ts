@@ -171,6 +171,35 @@ describe('model fallback', () => {
   });
 });
 
+describe('Groq first', () => {
+  it('answers from Groq without calling Gemini when Groq succeeds', async () => {
+    const urls: string[] = [];
+    const fetchImpl = (async (url: string | URL | Request) => {
+      urls.push(String(url));
+      return new Response(JSON.stringify({ choices: [{ message: { content: ' From Groq. ' } }] }), { status: 200 });
+    }) as typeof fetch;
+    const result = await generateBrief(request(validBody), deps({ groqKey: 'gsk-test', fetchImpl }));
+    expect(result).toEqual({ status: 200, body: { text: 'From Groq.' } });
+    expect(urls).toEqual(['https://api.groq.com/openai/v1/chat/completions']);
+  });
+
+  it('falls back to Gemini when Groq fails', async () => {
+    const fetchImpl = (async (url: string | URL | Request, init?: RequestInit) => {
+      if (String(url).includes('groq.com')) {
+        return new Response('down', { status: 500 });
+      }
+      return geminiReply('From Gemini.')(url, init);
+    }) as typeof fetch;
+    const result = await generateBrief(request(validBody), deps({ groqKey: 'gsk-test', fetchImpl, sleep: async () => undefined }));
+    expect(result).toEqual({ status: 200, body: { text: 'From Gemini.' } });
+  });
+
+  it('answers 503 when neither provider key is set', async () => {
+    const result = await generateBrief(request(validBody), deps({ apiKey: undefined, groqKey: undefined }));
+    expect(result.status).toBe(503);
+  });
+});
+
 describe('parseBrief and prompts', () => {
   it('keeps only the agent and trimmed facts', () => {
     expect(parseBrief({ agent: 'builder', facts: ['  one  '], extra: 'ignored' })).toEqual({ agent: 'builder', facts: ['one'] });
