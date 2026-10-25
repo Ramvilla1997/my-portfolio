@@ -220,3 +220,28 @@
 /* Figures keep their box before the image loads, so nothing shifts when it arrives. */
 .case-media { width: 100%; }
 .case-media img { width: 100%; height: auto; }
+
+/* Mini: the on-page assistant */
+.agent { position: fixed; left: 0; top: 0; z-index: 70; transform: translate(0, 0); will-change: transform; }
+.agent-figure { width: 72px; height: 72px; padding: 0; border: 0; background: transparent; color: var(--paper); cursor: pointer; border-radius: 50%; filter: drop-shadow(0 8px 16px rgb(0 0 0 / 45%)); }
+.agent-figure svg { display: block; animation: bob 2.6s ease-in-out infinite; }
+.agent-figure:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+.agent-eye { animation: blink 4.2s steps(1) infinite; transform-origin: center; }
+.agent-panel { position: absolute; right: 0; bottom: 84px; width: min(360px, calc(100vw - 32px)); max-height: min(440px, 60vh); display: grid; grid-template-rows: 1fr auto auto; gap: 10px; padding: 14px; border-radius: 18px; background: rgb(18 20 26 / 96%); border: 1px solid var(--line); box-shadow: 0 24px 60px rgb(0 0 0 / 55%); backdrop-filter: blur(10px); }
+.agent-panel[hidden] { display: none; }
+.agent-log { overflow-y: auto; display: grid; gap: 8px; align-content: start; min-height: 120px; font-size: 0.95rem; }
+.agent-msg { margin: 0; padding: 10px 12px; border-radius: 12px; background: #1d2029; color: var(--paper); max-width: 95%; }
+.agent-msg--you { justify-self: end; background: var(--accent); color: var(--ink); }
+.agent-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.agent-chips button { border: 1px solid var(--line); background: transparent; color: var(--paper); border-radius: 999px; padding: 6px 10px; font: inherit; font-size: 0.875rem; cursor: pointer; }
+.agent-chips button:hover { border-color: var(--accent); }
+.agent-form { display: flex; gap: 8px; }
+.agent-form input { flex: 1; min-width: 0; font: inherit; color: var(--paper); background: transparent; border: 0; border-bottom: 1px solid var(--line); padding: 10px 0; outline: none; }
+.agent-form input:focus { border-color: var(--accent); }
+.agent-form button { border: 0; border-radius: 999px; padding: 0 16px; background: var(--paper); color: var(--ink); font: inherit; font-weight: 600; cursor: pointer; }
+.agent-highlight { outline: 1px solid var(--accent); outline-offset: 12px; border-radius: 12px; transition: outline-color 0.6s; }
+
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+@media (prefers-reduced-motion: reduce) { .agent-figure svg, .agent-eye { animation: none; } }
+@media (max-width: 600px) { .agent-panel { right: 0; bottom: 84px; } }
