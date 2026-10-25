@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { geminiBriefing, pageBriefing, type Briefing } from '../agents/briefing';
-import { roster, rooms, timing, type AgentId, type AgentRole, type Point, type SectionId } from '../agents/roster';
+import { ROOM_EFFECT, roster, rooms, timing, type AgentId, type AgentRole, type Point, type SectionId } from '../agents/roster';
+import { routeFromDesk, reversed, walkOf, workPointFor, type Walk } from '../agents/routes';
 import { useEffects } from './EffectsContext';
 
 type Phase = 'idle' | 'walking' | 'working' | 'done';
@@ -11,6 +12,7 @@ type Phase = 'idle' | 'walking' | 'working' | 'done';
 interface AgentState {
   readonly phase: Phase;
   readonly at: Point;
+  readonly walk: Walk;
   readonly note: string | null;
 }
 
@@ -21,27 +23,20 @@ interface LogEntry {
   readonly source: 'page' | 'gemini' | 'notice';
 }
 
-const LOG_LIMIT = 12;
-const AUTO_WALK_MS = 700;
-const AUTO_WORK_MS = 1400;
-const AUTO_GAP_MIN_MS = 9000;
-const AUTO_GAP_MAX_MS = 14000;
-const PAUSE_AFTER_MANUAL_MS = 30000;
-const AUTO_FIRST_MS = 4000;
-const LIVE_LIMIT = 4;
-
 interface LiveItem {
   readonly key: number;
   readonly agent: AgentId;
   readonly text: string;
 }
 
-const PHASE_TEXT: Record<Phase, (role: AgentRole) => string> = {
-  idle: () => 'At desk',
-  walking: (role) => `Walking to ${sectionLabel(role.section)}`,
-  working: (role) => `Working in ${sectionLabel(role.section)}`,
-  done: () => 'Briefing filed',
-};
+const LOG_LIMIT = 12;
+const LIVE_LIMIT = 4;
+const AUTO_WORK_MS = 1400;
+const AUTO_GAP_MIN_MS = 9000;
+const AUTO_GAP_MAX_MS = 14000;
+const AUTO_FIRST_MS = 4000;
+const PAUSE_AFTER_MANUAL_MS = 30000;
+const VISIT_CHANCE = 0.5;
 
 const SECTION_LABEL: Record<SectionId, string> = {
   about: 'About',
@@ -50,12 +45,27 @@ const SECTION_LABEL: Record<SectionId, string> = {
   resume: 'Resume',
 };
 
-function sectionLabel(section: SectionId): string {
-  return SECTION_LABEL[section];
-}
+const PHASE_TEXT: Record<Phase, (role: AgentRole) => string> = {
+  idle: () => 'At desk',
+  walking: (role) => `Walking to ${SECTION_LABEL[role.section]}`,
+  working: (role) => `Working in ${SECTION_LABEL[role.section]}`,
+  done: () => 'Briefing filed',
+};
+
+/* A small icon above each agent while it works, so you can see what it is doing. */
+const ACTIVITY_ICON: Record<AgentId, React.ReactNode> = {
+  scout: (
+    <path d="M10.5 3a7.5 7.5 0 0 1 6 12l4.5 4.5-1.5 1.5-4.5-4.5A7.5 7.5 0 1 1 10.5 3Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Z" />
+  ),
+  archivist: <path d="M3 6h7l2 2h9v10H3V6Z" />,
+  builder: <path d="m14.7 6.3 3 3-8.4 8.4-3.6.6.6-3.6 8.4-8.4Zm4.2-1.5 1.5 1.5-2 2-1.5-1.5 2-2Z" />,
+  courier: <path d="M3 6h18v12H3V6Zm2 2v.5l7 4.5 7-4.5V8l-7 4.5L5 8Z" />,
+};
 
 function initialStates(): Record<AgentId, AgentState> {
-  return Object.fromEntries(roster.map((role) => [role.id, { phase: 'idle', at: role.desk, note: null }])) as Record<AgentId, AgentState>;
+  return Object.fromEntries(
+    roster.map((role) => [role.id, { phase: 'idle', at: role.desk, walk: walkOf([role.desk]), note: null }]),
+  ) as Record<AgentId, AgentState>;
 }
 
 function wait(milliseconds: number): Promise<void> {
@@ -74,6 +84,7 @@ function AgentSprite({ color }: { readonly color: string }) {
   return (
     <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false" style={{ color }}>
       <rect x="8" y="10" width="32" height="26" rx="10" fill="currentColor" />
+      <rect x="9.5" y="11.5" width="29" height="8" rx="6" fill="#ffffff" opacity="0.18" />
       <circle cx="19" cy="22" r="3.4" fill="#fff" />
       <circle cx="29" cy="22" r="3.4" fill="#fff" />
       <circle cx="19.8" cy="22.4" r="1.5" fill="#15171c" />
@@ -107,10 +118,10 @@ export function Workspace() {
     };
   }, []);
 
-  const move = useCallback((id: AgentId, phase: Phase, at: Point, note?: string) => {
+  const move = useCallback((id: AgentId, phase: Phase, at: Point, walk: Walk, note?: string) => {
     setAgents((previous) => ({
       ...previous,
-      [id]: { phase, at, note: note ?? previous[id].note },
+      [id]: { phase, at, walk, note: note ?? previous[id].note },
     }));
   }, []);
 
@@ -118,6 +129,12 @@ export function Workspace() {
     keyRef.current += 1;
     const entry: LogEntry = { key: keyRef.current, agent, text, source };
     setLog((previous) => [entry, ...previous].slice(0, LOG_LIMIT));
+  }, []);
+
+  const pushLive = useCallback((agent: AgentId, text: string) => {
+    keyRef.current += 1;
+    const item: LiveItem = { key: keyRef.current, agent, text };
+    setLive((previous) => [item, ...previous].slice(0, LIVE_LIMIT));
   }, []);
 
   const runTask = useCallback(
@@ -128,37 +145,41 @@ export function Workspace() {
       lastManualRef.current = Date.now();
       busyRef.current = true;
       setBusy(true);
-      const walkMs = reduced ? 0 : timing.walkMs;
       const workMs = reduced ? 0 : timing.workMs;
-      const returnMs = reduced ? 0 : timing.returnMs;
+      const out = walkOf(routeFromDesk(role, role.section));
+      const back = walkOf(reversed(routeFromDesk(role, role.section)));
+      const outMs = reduced ? 0 : out.seconds * 1000;
+      const backMs = reduced ? 0 : back.seconds * 1000;
 
-      move(role.id, 'walking', role.work);
-      await wait(walkMs);
+      move(role.id, 'walking', role.work, out);
+      await wait(outMs);
       if (!alive.current) return;
 
-      move(role.id, 'working', role.work);
+      move(role.id, 'working', role.work, walkOf([role.work]));
       play(role.section, role.effect, workMs);
       scrollToSection(role.section, !reduced);
       await wait(workMs);
       if (!alive.current) return;
 
-      append(role.id, pageBriefing(role.id), 'page');
-      move(role.id, 'done', role.work);
-      await wait(returnMs / 2);
+      const briefing = pageBriefing(role.id);
+      append(role.id, briefing, 'page');
+      pushLive(role.id, briefing);
+      move(role.id, 'done', role.work, walkOf([role.work]));
+      await wait(reduced ? 0 : timing.returnMs / 2);
       if (!alive.current) return;
 
-      move(role.id, 'walking', role.desk);
-      await wait(returnMs);
+      move(role.id, 'walking', role.desk, back);
+      await wait(backMs);
       if (!alive.current) return;
 
-      move(role.id, 'idle', role.desk);
+      move(role.id, 'idle', role.desk, walkOf([role.desk]));
       busyRef.current = false;
       setBusy(false);
     },
-    [append, move, play, reduced],
+    [append, move, play, pushLive, reduced],
   );
 
-  /* One small task for the next agent in turn. It plays the page effect and writes no log entry. */
+  /* One small task for the next agent in turn. Sometimes it visits another room. It writes no log entry. */
   const autoStep = useCallback(async () => {
     if (busyRef.current) {
       return;
@@ -168,30 +189,38 @@ export function Workspace() {
     if (!role || role.idleTasks.length === 0) {
       return;
     }
-    const note = role.idleTasks[Math.floor(Math.random() * role.idleTasks.length)] ?? role.taskLabel;
+    const visiting = Math.random() < VISIT_CHANCE;
+    const others = rooms.filter((room) => room.id !== role.section);
+    const target: SectionId = visiting && others.length > 0
+      ? (others[Math.floor(Math.random() * others.length)]?.id ?? role.section)
+      : role.section;
+    const task = role.idleTasks[Math.floor(Math.random() * role.idleTasks.length)] ?? role.taskLabel;
+    const note = target === role.section ? task : `Visiting ${SECTION_LABEL[target]}: ${task}`;
+
+    const out = walkOf(routeFromDesk(role, target));
+    const back = walkOf(reversed(routeFromDesk(role, target)));
+    const destination = workPointFor(target);
     busyRef.current = true;
     setBusy(true);
-    keyRef.current += 1;
-    const liveKey = keyRef.current;
-    setLive((previous) => [{ key: liveKey, agent: role.id, text: note }, ...previous].slice(0, LIVE_LIMIT));
+    pushLive(role.id, note);
 
-    move(role.id, 'walking', role.work);
-    await wait(AUTO_WALK_MS);
+    move(role.id, 'walking', destination, out);
+    await wait(out.seconds * 1000);
     if (!alive.current) return;
 
-    move(role.id, 'working', role.work);
-    play(role.section, role.effect, AUTO_WORK_MS);
+    move(role.id, 'working', destination, walkOf([destination]));
+    play(target, ROOM_EFFECT[target], AUTO_WORK_MS);
     await wait(AUTO_WORK_MS);
     if (!alive.current) return;
 
-    move(role.id, 'walking', role.desk, note);
-    await wait(AUTO_WALK_MS);
+    move(role.id, 'walking', role.desk, back, note);
+    await wait(back.seconds * 1000);
     if (!alive.current) return;
 
-    move(role.id, 'idle', role.desk, note);
+    move(role.id, 'idle', role.desk, walkOf([role.desk]), note);
     busyRef.current = false;
     setBusy(false);
-  }, [move, play]);
+  }, [move, play, pushLive]);
 
   useEffect(() => {
     if (reduced) {
@@ -226,6 +255,9 @@ export function Workspace() {
     [append],
   );
 
+  const liveHead = live[0];
+  const liveRole = liveHead ? roster.find((role) => role.id === liveHead.agent) : undefined;
+
   return (
     <section id="workspace" className="workspace" aria-labelledby="workspace-title">
       <div className="wrap">
@@ -237,54 +269,65 @@ export function Workspace() {
 
         <div className="ws-live" aria-live="polite">
           <span className="ws-live-dot" aria-hidden="true" />
-          {live.length === 0 ? (
-            <span>The agents are starting their first task.</span>
-          ) : (
+          {liveRole && liveHead ? (
             <span>
-              <strong>{roster.find((role) => role.id === live[0]?.agent)?.name}</strong> {live[0]?.text}
+              <strong>{liveRole.name}</strong> {liveHead.text}
             </span>
+          ) : (
+            <span>The agents are starting their first task.</span>
           )}
         </div>
-        {live.length > 1 ? (
-          <ul className="ws-live-history" aria-label="Recent agent tasks">
-            {live.slice(1).map((item) => (
-              <li key={item.key}>
-                {roster.find((role) => role.id === item.agent)?.name}: {item.text}
-              </li>
-            ))}
-          </ul>
-        ) : null}
 
         <div className="ws-grid">
-          <div className="ws-floor" aria-hidden="true">
-            {rooms.map((room) => (
-              <div
-                key={room.id}
-                className="ws-room"
-                style={{ left: `${room.x}%`, top: `${room.y}%`, width: `${room.w}%`, height: `${room.h}%` }}
-              >
-                <span className="ws-room-label">{room.label}</span>
-              </div>
-            ))}
-            {roster.map((role) => {
-              const state = agents[role.id];
-              return (
-                <motion.div
-                  key={role.id}
-                  className="ws-agent"
-                  style={{ color: role.color }}
-                  initial={false}
-                  animate={{ left: `${state.at.x}%`, top: `${state.at.y}%` }}
-                  transition={{ duration: reduced ? 0 : timing.walkMs / 1000, ease: [0.4, 0, 0.2, 1] }}
+          <div className="ws-iso" aria-hidden="true">
+            <div className="ws-plane">
+              <div className="ws-hall" />
+              <div className="ws-table" />
+              {rooms.map((room) => (
+                <div
+                  key={room.id}
+                  className="ws-room"
+                  style={{ left: `${room.x}%`, top: `${room.y}%`, width: `${room.w}%`, height: `${room.h}%` }}
                 >
-                  {state.phase === 'working' && !reduced ? <span className="ws-pulse" /> : null}
-                  <span className="ws-sprite">
-                    <AgentSprite color={role.color} />
-                  </span>
-                  <span className="ws-tag">{role.name}</span>
-                </motion.div>
-              );
-            })}
+                  <span className="ws-room-label">{room.label}</span>
+                </div>
+              ))}
+              {roster.map((role) => (
+                <div key={`desk-${role.id}`} className="ws-desk" style={{ left: `${role.desk.x}%`, top: `${role.desk.y + 3}%` }} />
+              ))}
+              {roster.map((role) => {
+                const state = agents[role.id];
+                const walking = state.phase === 'walking';
+                return (
+                  <motion.div
+                    key={role.id}
+                    className={`ws-agent${walking ? ' is-walking' : ''}`}
+                    style={{ color: role.color }}
+                    initial={false}
+                    animate={{
+                      left: state.walk.path.map((point) => `${point.x}%`),
+                      top: state.walk.path.map((point) => `${point.y}%`),
+                    }}
+                    transition={{ duration: reduced ? 0 : state.walk.seconds, times: state.walk.times, ease: 'linear' }}
+                  >
+                    <span className="ws-shadow" />
+                    <span className="ws-billboard">
+                      {state.phase === 'working' ? (
+                        <span className="ws-badge">
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" focusable="false">
+                            {ACTIVITY_ICON[role.id]}
+                          </svg>
+                        </span>
+                      ) : null}
+                      <span className="ws-sprite">
+                        <AgentSprite color={role.color} />
+                      </span>
+                      <span className="ws-tag">{role.name}</span>
+                    </span>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
 
           <ul className="ws-roster">

@@ -95,3 +95,11 @@ export function findRole(id: AgentId): AgentRole {
   }
   return role;
 }
+
+/* The effect each room plays when an agent works there. */
+export const ROOM_EFFECT: Readonly<Record<SectionId, EffectKind>> = {
+  about: 'radar',
+  experience: 'stamp',
+  projects: 'sparks',
+  resume: 'glow',
+};
