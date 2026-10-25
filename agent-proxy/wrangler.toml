@@ -1,7 +1,0 @@
-name = "ram-villa-agents"
-main = "worker.js"
-compatibility_date = "2025-06-01"
-
-[vars]
-ALLOWED_ORIGIN = "https://ramvilla1997.github.io"
-GEMINI_MODEL = "gemini-2.5-flash"
