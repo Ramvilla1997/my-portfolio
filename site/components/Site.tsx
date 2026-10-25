@@ -5,6 +5,13 @@ import { EffectsProvider } from './EffectsContext';
 import { Playground } from './Playground';
 import { profile } from '../content/portfolio';
 
+const HERO_STATS = [
+  { value: '6+', label: 'years in production' },
+  { value: '850 → 120 ms', label: 'provider search latency' },
+  { value: '2.1 → 1.3 MB', label: 'frontend bundle' },
+  { value: 'AWS', label: 'Certified Developer' },
+] as const;
+
 export function Site() {
   return (
     <EffectsProvider>
@@ -17,9 +24,6 @@ export function Site() {
             <ul className="nav-links">
               <li>
                 <a href="#workspace">Playground</a>
-              </li>
-              <li>
-                <a href="#about">About</a>
               </li>
               <li>
                 <a href="#experience">Experience</a>
@@ -40,21 +44,38 @@ export function Site() {
 
       <main id="main">
         <section id="top" className="hero">
-          <div className="wrap">
-            <p className="eyebrow">{profile.eyebrow}</p>
-            <h1>{profile.name}</h1>
-            <p className="lede">{profile.intro}</p>
-            <div className="cta-row">
+          <div className="hero-backdrop" aria-hidden="true" />
+          <div className="wrap hero-inner">
+            <p className="eyebrow reveal" style={{ animationDelay: '0.05s' }}>
+              {profile.eyebrow}
+            </p>
+            <h1 className="hero-title">
+              <span className="reveal" style={{ animationDelay: '0.15s' }}>
+                Ram Villa
+              </span>
+            </h1>
+            <p className="lede reveal" style={{ animationDelay: '0.3s' }}>
+              {profile.intro}
+            </p>
+            <div className="cta-row reveal" style={{ animationDelay: '0.45s' }}>
               <a className="btn btn-primary" href="#workspace">
                 Ask the office
               </a>
               <a className="btn" href="#projects">
-                See my work
+                See projects
               </a>
-              <a className="btn" href="#resume">
-                Request resume
+              <a className="btn btn-ghost" href={profile.resumePdf} target="_blank" rel="noopener">
+                Download resume (PDF)
               </a>
             </div>
+            <dl className="stats reveal" style={{ animationDelay: '0.6s' }}>
+              {HERO_STATS.map((stat) => (
+                <div key={stat.label} className="stat">
+                  <dt>{stat.label}</dt>
+                  <dd>{stat.value}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
         </section>
 
@@ -67,7 +88,10 @@ export function Site() {
       </main>
 
       <footer className="footer">
-        <div className="wrap">© 2026 {profile.name}</div>
+        <div className="wrap footer-inner">
+          <span>© {new Date().getFullYear()} {profile.name}</span>
+          <span>{profile.location}</span>
+        </div>
       </footer>
     </EffectsProvider>
   );

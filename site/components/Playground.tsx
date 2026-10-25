@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useReducedMotion } from 'motion/react';
 import { crewFor, phraseFor, type CrewMember } from '../agents/crew';
+import { briefFor } from '../agents/brief';
 import { findRole, ROOM_EFFECT, roster, timing, type AgentId, type Point, type SectionId } from '../agents/roster';
 import { routeFromDesk, reversed, walkOf, workPointFor, type Walk } from '../agents/routes';
 import { search } from '../agents/search';
@@ -29,7 +30,7 @@ interface Answer {
 
 const ASK_TIMEOUT_MS = 12000;
 const QUESTION_MAX = 200;
-const NOTHING_FOUND = "I don't have that on this page. Try asking about projects, experience, skills or the resume.";
+const NOTHING_FOUND = "I couldn't find that on this page. Try “Where did you work?” or “Which AWS services do you use?”";
 
 const SECTION_LABEL: Record<SectionId, string> = {
   about: 'About',
@@ -136,7 +137,7 @@ export function Playground() {
       if (alive.current) {
         setAnswer({
           question,
-          text: text ?? hits[0]?.passage.text ?? NOTHING_FOUND,
+          text: text ?? (hits[0] ? briefFor(hits[0].passage.text, question) : NOTHING_FOUND),
           source: text ? 'ai' : 'page',
           crew: crew.map((member) => member.role.id),
           section: crew[0]?.section ?? null,
@@ -184,7 +185,7 @@ export function Playground() {
             onChange={(event) => setDraft(event.target.value)}
             maxLength={QUESTION_MAX}
             autoComplete="off"
-            placeholder="Ask about projects, skills or resume"
+            placeholder="Ask about projects, experience or skills"
           />
           <button type="submit" disabled={pending || draft.trim().length < 3}>
             {pending ? 'Working' : 'Ask'}

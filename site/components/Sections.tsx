@@ -1,6 +1,6 @@
 'use client';
 
-import { about, jobs, profile, projects } from '../content/portfolio';
+import { about, education, jobs, openSource, profile, projects } from '../content/portfolio';
 import { SparkField } from './SparkField';
 import { timing } from '../agents/roster';
 import { useSectionEffect } from './EffectsContext';
@@ -49,18 +49,19 @@ export function Experience() {
                 <span>{job.place}</span>
               </div>
               <div>
-                <h3>
-                  {job.title} <span className="org">· {job.org}</span>
-                </h3>
+                <h3>{job.title}</h3>
+                <p className="job-org">{job.org}</p>
                 <ul>
                   {job.points.map((point) => (
                     <li key={point}>{point}</li>
                   ))}
                 </ul>
               </div>
-              <span className="filed" style={{ animationDelay: `${index * 0.25}s` }}>
-                Filed
-              </span>
+              {index === 0 ? (
+                <span className="filed" style={{ animationDelay: '0.2s' }}>
+                  Current
+                </span>
+              ) : null}
             </li>
           ))}
         </ol>
@@ -73,30 +74,41 @@ export function Projects() {
   const effect = useSectionEffect('projects');
   return (
     <section id="projects" className={sectionClass('section section--sparks', effect)} aria-labelledby="proj-title">
-      <SparkField active={effect === 'sparks'} durationMs={timing.workMs} color="#a8691b" />
+      <SparkField active={effect === 'sparks'} durationMs={timing.workMs} color="#FFB547" />
       <div className="wrap">
         <p className="eyebrow">Projects</p>
         <h2 id="proj-title">Things I’ve built.</h2>
         <div className="cards">
           {projects.map((project) => (
-            <article key={project.id} className={project.image ? 'card card--featured' : 'card'}>
-              {project.image ? (
-                <img src={`/${project.image}`} alt={`${project.title} screenshot`} width={1280} height={800} loading="lazy" />
-              ) : null}
+            <article key={project.id} className="card">
               <div className="card-body">
                 <p className="tag">{project.tag}</p>
                 <h3>{project.title}</h3>
                 <p>{project.summary}</p>
                 <p className="stack">{project.stack}</p>
-                <p className="links">
-                  {project.liveUrl ? <a href={project.liveUrl} target="_blank" rel="noopener">Open the demo</a> : null}
-                  {project.codeUrl ? <a href={project.codeUrl} target="_blank" rel="noopener">Code</a> : null}
-                  {project.inProgress ? <span className="badge">In progress</span> : null}
-                </p>
+                {project.status === 'in-progress' ? <span className="badge">In progress</span> : null}
               </div>
             </article>
           ))}
         </div>
+
+        <h3 className="subhead">More on GitHub</h3>
+        <ul className="oss">
+          {openSource.map((project) => (
+            <li key={project.id} className="oss-item">
+              <span>
+                <strong>{project.title}</strong> · {project.summary}
+              </span>
+              <span className="links">
+                {project.links?.map((link) => (
+                  <a key={link.href} href={link.href} target="_blank" rel="noopener">
+                    {link.label}
+                  </a>
+                ))}
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );
@@ -106,27 +118,67 @@ export function Resume() {
   const effect = useSectionEffect('resume');
   return (
     <section id="resume" className={sectionClass('section', effect)} aria-labelledby="resume-title">
-      <div className="wrap narrow">
-        <p className="eyebrow">Resume</p>
-        <h2 id="resume-title">Resume, on request.</h2>
-        <p className="prose">Tell me who you are and why you’re asking, and I’ll send it back personally.</p>
-        <form className="request" action={`mailto:${profile.email}`} method="post" encType="text/plain">
-          <div className="field">
-            <label htmlFor="r-name">Your name</label>
-            <input id="r-name" name="name" required autoComplete="name" />
+      <div className="wrap">
+        <div className="resume-head">
+          <div>
+            <p className="eyebrow">Resume</p>
+            <h2 id="resume-title">Ram Villa</h2>
+            <p className="resume-role">
+              {profile.title} · {profile.location}
+            </p>
           </div>
-          <div className="field">
-            <label htmlFor="r-org">Company or project</label>
-            <input id="r-org" name="company" required autoComplete="organization" />
+          <div className="resume-actions">
+            <a className="btn btn-primary" href={profile.resumePdf} target="_blank" rel="noopener">
+              Download PDF
+            </a>
+            <a className="btn" href={`mailto:${profile.email}`}>
+              Email me
+            </a>
           </div>
-          <div className="field">
-            <label htmlFor="r-why">Why you’re asking</label>
-            <textarea id="r-why" name="reason" rows={3} required />
+        </div>
+
+        <div className="resume-grid">
+          <div>
+            <h3 className="subhead">Experience</h3>
+            <ol className="resume-list">
+              {jobs.map((job) => (
+                <li key={`${job.org}-${job.period}`}>
+                  <p className="resume-line">
+                    <strong>{job.title}</strong>, {job.org}
+                  </p>
+                  <p className="resume-period">
+                    {job.period} · {job.place}
+                  </p>
+                </li>
+              ))}
+            </ol>
           </div>
-          <button className="btn btn-primary" type="submit">
-            Send request
-          </button>
-        </form>
+
+          <div>
+            <h3 className="subhead">Education</h3>
+            <ul className="resume-list">
+              {education.map((item) => (
+                <li key={item.degree}>
+                  <p className="resume-line">
+                    <strong>{item.degree}</strong>
+                  </p>
+                  <p className="resume-period">
+                    {item.school} · {item.period}
+                  </p>
+                </li>
+              ))}
+            </ul>
+
+            <h3 className="subhead">Certifications</h3>
+            <ul className="resume-list">
+              {about.certifications.map((item) => (
+                <li key={item}>
+                  <p className="resume-line">{item}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -140,6 +192,9 @@ export function Contact() {
         <h2 id="contact-title">
           <a href={`mailto:${profile.email}`}>Let’s build it.</a>
         </h2>
+        <p className="lede">
+          {profile.email} · {profile.phone}
+        </p>
         <div className="cta-row">
           <a className="btn" href={profile.linkedin} target="_blank" rel="noopener">
             LinkedIn
@@ -148,7 +203,7 @@ export function Contact() {
             GitHub
           </a>
           <a className="btn" href={profile.phoneHref}>
-            {profile.phone}
+            Call
           </a>
         </div>
       </div>

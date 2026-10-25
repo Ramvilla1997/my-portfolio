@@ -1,4 +1,4 @@
-import { about, jobs, profile, projects } from '../content/portfolio';
+import { about, education, jobs, openSource, profile, projects, summary } from '../content/portfolio';
 import type { AgentId, SectionId } from './roster';
 
 export interface Passage {
@@ -26,7 +26,7 @@ const STOP = new Set(['the', 'a', 'an', 'and', 'or', 'of', 'to', 'in', 'on', 'fo
 /* Everything the page says, split into passages a visitor can be answered from. */
 export function passages(): Passage[] {
   const list: Passage[] = [
-    { id: 'about', section: 'about', agent: SECTION_AGENT.about, title: 'About', text: about.summary },
+    { id: 'about', section: 'about', agent: SECTION_AGENT.about, title: 'About', text: summary },
   ];
   for (const group of about.skills) {
     list.push({
@@ -46,16 +46,22 @@ export function passages(): Passage[] {
       text: `${job.title} at ${job.org}, ${job.period}, ${job.place}. ${job.points.join(' ')}`,
     });
   });
-  for (const project of projects) {
-    const links = [project.liveUrl ? 'has a live demo' : null, project.codeUrl ? 'has public code' : null, project.inProgress ? 'is in progress' : null]
-      .filter((item): item is string => item !== null)
-      .join(', ');
+  for (const project of [...projects, ...openSource]) {
     list.push({
       id: `project-${project.id}`,
       section: 'projects',
       agent: SECTION_AGENT.projects,
       title: project.title,
-      text: `${project.title}: ${project.summary} Stack: ${project.stack}. ${links ? `It ${links}.` : ''}`.trim(),
+      text: `${project.title}: ${project.summary} Stack: ${project.stack}. ${project.status === 'in-progress' ? 'In progress.' : ''}`.trim(),
+    });
+  }
+  for (const item of education) {
+    list.push({
+      id: `education-${item.degree}`,
+      section: 'resume',
+      agent: SECTION_AGENT.resume,
+      title: 'Education',
+      text: `${item.degree}, ${item.school}, ${item.period}.`,
     });
   }
   list.push({
@@ -63,7 +69,7 @@ export function passages(): Passage[] {
     section: 'resume',
     agent: SECTION_AGENT.resume,
     title: 'Resume',
-    text: `The resume is shared on request. Tell me who you are and why you are asking, and I will send it back personally. Requests go to ${profile.email}.`,
+    text: `The resume is available as a PDF download on this page. Email ${profile.email} for anything it does not cover.`,
   });
   list.push({
     id: 'contact',

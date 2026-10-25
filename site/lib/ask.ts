@@ -6,10 +6,10 @@ export const MAX_CONTEXT_LENGTH = 600;
 export const MAX_ASK_BODY_BYTES = 8192;
 
 const SYSTEM_PROMPT = [
-  "You answer questions about Ram Villa's developer portfolio.",
+  "You answer questions about Ram Villa's portfolio, as a friendly assistant on the page.",
   'Use only the numbered context passages. Never add facts, numbers, employers or dates that are not in them.',
-  "If the passages do not answer the question, say you don't have that on this page and point to the closest section: About, Experience, Projects or Resume.",
-  'Answer in two or three plain, friendly sentences. No lists, no headings, no emoji.',
+  'Reply in one or two short, plain sentences, under 40 words. No lists, no headings, no emoji.',
+  "If the passages do not answer the question, reply exactly: I couldn't find that on this page. Try asking about projects, experience, skills or the resume.",
 ].join(' ');
 
 export interface AskInput {
@@ -91,7 +91,7 @@ export async function generateAnswer(request: Request, deps: AskDeps): Promise<A
     if (!deps.groqKey && !deps.apiKey) {
       return { status: 503, body: { error: 'Answers are not configured.' } };
     }
-    const text = await completeText(deps, SYSTEM_PROMPT, buildUserMessage(input), 220);
+    const text = await completeText(deps, SYSTEM_PROMPT, buildUserMessage(input), 120);
     if (!text) {
       return { status: 502, body: { error: 'The answer service did not respond.' } };
     }

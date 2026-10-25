@@ -102,7 +102,7 @@ export const roster: readonly AgentRole[] = [
     desk: { x: 10, y: 70 },
     work: { x: 16, y: 86 },
     taskLabel: 'Check what ships',
-    idleTasks: ['Checking which projects have live demos', 'Checking which projects have public code', 'Looking for the project in progress'],
+    idleTasks: ['Checking which projects have shipped', 'Counting the projects in progress', 'Looking for the newest project'],
     effect: 'sparks',
   },
   {

@@ -1,24 +1,25 @@
 import type { Metadata, Viewport } from 'next';
+import { Chakra_Petch, Inter } from 'next/font/google';
 import type { ReactNode } from 'react';
 import './globals.css';
 
+const display = Chakra_Petch({ subsets: ['latin'], weight: ['500', '600', '700'], variable: '--font-display', display: 'swap' });
+const body = Inter({ subsets: ['latin'], variable: '--font-body', display: 'swap' });
+
 export const metadata: Metadata = {
   title: 'Ram Villa · Senior Full-Stack Engineer',
-  description: 'Ram Villa, Senior Full-Stack Engineer. React, TypeScript, AWS, and AI tooling in regulated healthcare and fintech.',
+  description: 'Ram Villa, Senior Full-Stack Engineer. React, TypeScript and AWS for healthcare and fintech teams.',
 };
 
 export const viewport: Viewport = {
-  themeColor: '#fbfaf7',
+  themeColor: '#070912',
   width: 'device-width',
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { readonly children: ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="stylesheet" href="/assets/fonts.css" />
-      </head>
+    <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body>
         <a className="skip" href="#main">
           Skip to content
