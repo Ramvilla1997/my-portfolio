@@ -328,7 +328,7 @@ function buildRobot(parent: THREE.Object3D, color: string, seed: number, shadowT
 
 /* A tilted, warm office: tiled floor, furniture with screens, lamps, dust, and one robot per agent. */
 export function buildOffice(scene: THREE.Scene): Office {
-  scene.background = new THREE.Color('#1b1d23');
+  scene.background = new THREE.Color('#0a0d18');
   const shadowTex = shadowTexture();
 
   const floorTex = floorTexture();

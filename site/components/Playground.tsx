@@ -169,9 +169,13 @@ export function Playground() {
   return (
     <section id="workspace" className="playground" aria-labelledby="playground-title">
       <div className="wrap">
-        <p className="eyebrow">Agent playground</p>
-        <h2 id="playground-title">Ask the office.</h2>
-        <p className="lede">Ask anything about this portfolio. Only the agents you need will leave their desks.</p>
+        <div className="section-head" data-reveal>
+          <p className="section-index">
+            <span>01</span> Agent playground
+          </p>
+          <h2 id="playground-title">Ask the office.</h2>
+        </div>
+        <p className="lede">Ask anything about my work. Only the agents you need leave their desks.</p>
 
         <form className="pg-search" role="search" onSubmit={onSubmit}>
           <label htmlFor="pg-question" className="sr-only">

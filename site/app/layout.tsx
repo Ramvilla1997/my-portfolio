@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from 'next';
-import { Chakra_Petch, Inter } from 'next/font/google';
+import { Inter, JetBrains_Mono, Unbounded } from 'next/font/google';
 import type { ReactNode } from 'react';
 import './globals.css';
 
-const display = Chakra_Petch({ subsets: ['latin'], weight: ['500', '600', '700'], variable: '--font-display', display: 'swap' });
+const display = Unbounded({ subsets: ['latin'], weight: ['500', '700', '800'], variable: '--font-display', display: 'swap' });
 const body = Inter({ subsets: ['latin'], variable: '--font-body', display: 'swap' });
+const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-mono', display: 'swap' });
 
 export const metadata: Metadata = {
   title: 'Ram Villa · Senior Full-Stack Engineer',
@@ -19,7 +20,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { readonly children: ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable}`}>
+    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body>
         <a className="skip" href="#main">
           Skip to content
