@@ -1,26 +1,49 @@
 # Ram Villa — Portfolio
 
-Personal portfolio site for Ram Villa, a full-stack engineer working with React, TypeScript, Node.js, and AWS. The site lives in `site/` (Next.js, hosted on Vercel, with four agents that work through the page). See `site/README.md`. The original single-page version is still in `index.html` until the new site is live.
+Personal portfolio for Ram Villa, Senior Full-Stack Engineer. The site is an agent playground: visitors ask questions, and the agent who looks after that part of the page walks over and answers from the page's own content.
+
+Live: https://my-portfolio-ram-villa.vercel.app
+
+## Repository layout
+
+| Path | What it is |
+|---|---|
+| `site/` | The Next.js app (App Router, TypeScript strict, Vitest, three.js). This is the product. |
+| `assets/` | Documents kept for reference (resume and FSL PDFs). |
+| `neue_regrade/` | Font files kept for reference. |
+| `docs/` | Design review notes for the earlier single-page version. |
 
 ## Run it
 
 ```bash
-cd site && npm ci && npm run dev
+cd site
+npm ci
+npm run dev        # http://localhost:3000
+npm test           # unit tests (search, crew, routes, office maths, answer route)
+npm run typecheck
+npm run build      # production build; `npx next start` serves it
 ```
 
-The old single page can still be opened directly: `npx serve .`
+## Configuration
 
-## Projects
+Set these as environment variables (locally in `site/.env.local`, on Vercel in Project → Settings → Environment Variables). None of them is read by the browser.
 
-| Project | What it does | Stack | Demo |
-|---|---|---|---|
-| [spendvoice](https://github.com/Ramvilla1997/spendvoice) | Log expenses by voice or text, with a 10-year savings projection. Installable, offline, data stays on the device. | React, TypeScript, IndexedDB, PWA | [Live](https://ramvilla1997.github.io/spendvoice/) |
-| [react-analytics-dashboard](https://github.com/Ramvilla1997/react-analytics-dashboard) | Analytics dashboard with KPIs, charts, and a filterable order table. | React, TanStack Query, Zod | [Live](https://ramvilla1997.github.io/react-analytics-dashboard/) |
-| [rag-document-qa](https://github.com/Ramvilla1997/rag-document-qa) | Ask questions about your documents and get answers that cite their sources. | Node.js, Express, TypeScript, BM25, Ollama | `npm run demo` |
-| [nl-to-sql-assistant](https://github.com/Ramvilla1997/nl-to-sql-assistant) | Plain-English questions to safe, read-only SQL over Postgres. | Node.js, Express, PostgreSQL | `npm run demo` |
-| [mcp-tool-server](https://github.com/Ramvilla1997/mcp-tool-server) | Model Context Protocol server with sandboxed, read-only tools for AI clients. | TypeScript, MCP SDK | `npm run demo` |
+| Variable | Purpose |
+|---|---|
+| `GROQ_API_KEY` | Optional. Answers AI questions first. |
+| `GROQ_MODEL` | Optional. Defaults to `llama-3.3-70b-versatile`. |
+| `GEMINI_API_KEY` | Optional. Used when Groq is not set or does not answer. |
+| `GEMINI_MODEL` | Optional. Defaults to `gemini-3.1-flash-lite`. |
 
-Each project has its own README with setup steps, architecture, tests, and known limits.
+Without any key, the playground still works. It answers with the matching passage from the page.
+
+## Content
+
+Every fact on the site is in `site/content/portfolio.ts`. The playground's search and answers are built from that file.
+
+## Deploy
+
+Vercel project `my-portfolio`, Root Directory `site`. Each push to `main` deploys production.
 
 ## Contact
 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { generateAnswer } from '../../../lib/ask';
-import { createLimiter } from '../../../lib/brief';
+import { createLimiter } from '../../../lib/limiter';
 
 export const dynamic = 'force-dynamic';
 

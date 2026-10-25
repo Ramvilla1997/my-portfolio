@@ -23,6 +23,15 @@ interface OfficeSceneProps {
 const HALF_VIEW = 8.4;
 const LABEL_HEIGHT = 2.9;
 
+/* A short, plain description of what is happening, for screen readers. */
+function speechSummary(agents: Record<AgentId, SceneAgent>, activity: Partial<Record<AgentId, string>>): string {
+  const active = roster.filter((role) => agents[role.id].phase !== 'idle');
+  if (active.length === 0) {
+    return 'All agents are at their desks.';
+  }
+  return active.map((role) => `${role.name}: ${activity[role.id] ?? 'working'}`).join('. ');
+}
+
 export function OfficeScene({ agents, activity, reduced }: OfficeSceneProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const labelRefs = useRef<Partial<Record<AgentId, HTMLDivElement | null>>>({});
@@ -96,9 +105,6 @@ export function OfficeScene({ agents, activity, reduced }: OfficeSceneProps) {
 
     const tick = (now: number) => {
       frame = requestAnimationFrame(tick);
-      if (!visible) {
-        return;
-      }
       const time = (now - start) / 1000;
       const state = agentsRef.current;
       office.update(time);
@@ -130,7 +136,9 @@ export function OfficeScene({ agents, activity, reduced }: OfficeSceneProps) {
         }
       }
 
-      renderer.render(scene, camera);
+      if (visible) {
+        renderer.render(scene, camera);
+      }
     };
     frame = requestAnimationFrame(tick);
 
@@ -144,7 +152,8 @@ export function OfficeScene({ agents, activity, reduced }: OfficeSceneProps) {
   }, []);
 
   return (
-    <div className="office-wrap" aria-hidden="true">
+    <div className="office-wrap" role="group" aria-label="The agent office. Agents are at their desks unless you ask a question.">
+      <p className="sr-only" aria-live="polite">{speechSummary(agents, activity)}</p>
       <div ref={mountRef} className="office-mount" />
       {roster.map((role) => (
         <div

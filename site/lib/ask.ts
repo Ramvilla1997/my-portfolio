@@ -65,6 +65,14 @@ function buildUserMessage({ question, context }: AskInput): string {
   return `Context passages:\n${passages}\n\nQuestion: ${question}`;
 }
 
+function parseJson(raw: string): unknown {
+  try {
+    return JSON.parse(raw) as unknown;
+  } catch {
+    throw new AskError(400, 'Body is not valid JSON.');
+  }
+}
+
 export async function generateAnswer(request: Request, deps: AskDeps): Promise<AskResult> {
   const origin = request.headers.get('origin');
   if (origin !== null && origin !== new URL(request.url).origin) {
@@ -74,15 +82,15 @@ export async function generateAnswer(request: Request, deps: AskDeps): Promise<A
   if (!deps.limiter(client, deps.now())) {
     return { status: 429, body: { error: 'Too many questions. Try again in a minute.' } };
   }
-  if (!deps.groqKey && !deps.apiKey) {
-    return { status: 503, body: { error: 'Answers are not configured.' } };
-  }
   try {
     const raw = await request.text();
     if (raw.length > MAX_ASK_BODY_BYTES) {
       return { status: 413, body: { error: 'Request is too large.' } };
     }
-    const input = parseAsk(JSON.parse(raw) as unknown);
+    const input = parseAsk(parseJson(raw));
+    if (!deps.groqKey && !deps.apiKey) {
+      return { status: 503, body: { error: 'Answers are not configured.' } };
+    }
     const text = await completeText(deps, SYSTEM_PROMPT, buildUserMessage(input), 220);
     if (!text) {
       return { status: 502, body: { error: 'The answer service did not respond.' } };

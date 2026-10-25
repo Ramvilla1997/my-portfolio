@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createLimiter } from '../lib/brief';
+import { createLimiter } from '../lib/limiter';
 import { generateAnswer, parseAsk } from '../lib/ask';
 
 const ORIGIN = 'https://portfolio.example.dev';
@@ -54,6 +54,13 @@ describe('generateAnswer', () => {
     expect((await generateAnswer(request(valid), deps({ groqKey: undefined }))).status).toBe(503);
     const failing = (async () => new Response('down', { status: 400 })) as typeof fetch;
     expect((await generateAnswer(request(valid), deps({ fetchImpl: failing }))).status).toBe(502);
+  });
+
+  it('reports bad input as 400 even when no key is configured', async () => {
+    const shortQuestion = await generateAnswer(request({ question: 'hi', context: ['x'] }), deps({ groqKey: undefined }));
+    expect(shortQuestion.status).toBe(400);
+    const badJson = await generateAnswer(request('{not json'), deps({ groqKey: undefined }));
+    expect(badJson.status).toBe(400);
   });
 
   it('rejects questions that are too short, too long or missing passages', () => {

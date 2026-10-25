@@ -184,7 +184,7 @@ export function Playground() {
             onChange={(event) => setDraft(event.target.value)}
             maxLength={QUESTION_MAX}
             autoComplete="off"
-            placeholder="Ask about projects, experience, skills, or the resume"
+            placeholder="Ask about projects, skills or resume"
           />
           <button type="submit" disabled={pending || draft.trim().length < 3}>
             {pending ? 'Working' : 'Ask'}
