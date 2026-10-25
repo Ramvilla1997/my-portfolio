@@ -24,5 +24,5 @@ Each project has its own README with setup steps, architecture, tests, and known
 
 ## Contact
 
-- LinkedIn: [linkedin.com/in/ramvilla](https://www.linkedin.com/in/ram-villa/)
+- LinkedIn: [linkedin.com/in/ramvilla](https://www.linkedin.com/in/ramvilla/)
 - Email: ramvilla2203@gmail.com
