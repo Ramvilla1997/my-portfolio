@@ -101,14 +101,15 @@ export interface BriefDeps {
   readonly sleep?: (milliseconds: number) => Promise<void>;
 }
 
-const RETRYABLE_STATUS = new Set([429, 500, 503]);
+/* 429 means the key's quota is spent. Retrying only adds requests to that quota, so it is not retried. */
+const RETRYABLE_STATUS = new Set([500, 503]);
 const RETRY_DELAYS_MS = [400, 1200];
 
 function defaultSleep(milliseconds: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-/* Gemini answers 503 or 429 when a model is busy. Those are worth a short wait and another try. */
+/* Gemini answers 503 when a model is overloaded. That is worth a short wait and another try. */
 async function callGemini(
   deps: BriefDeps,
   url: string,

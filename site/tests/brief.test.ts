@@ -132,6 +132,17 @@ describe('Gemini busy responses', () => {
     expect(calls).toBe(3);
   });
 
+  it('does not retry a 429, because retrying spends more of the same quota', async () => {
+    let calls = 0;
+    const fetchImpl = (async () => {
+      calls += 1;
+      return new Response('quota', { status: 429 });
+    }) as typeof fetch;
+    const result = await generateBrief(request(validBody), deps({ fetchImpl, sleep: async () => undefined }));
+    expect(result.status).toBe(502);
+    expect(calls).toBe(1);
+  });
+
   it('does not retry a 404 because the model is wrong, not busy', async () => {
     let calls = 0;
     const fetchImpl = (async () => {
