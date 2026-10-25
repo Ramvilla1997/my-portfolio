@@ -1,6 +1,6 @@
 import type { AgentId } from '../agents/roster';
 
-export const AGENT_IDS: readonly AgentId[] = ['scout', 'archivist', 'builder', 'courier'];
+export const AGENT_IDS: readonly AgentId[] = ['scout', 'planner', 'archivist', 'coder', 'builder', 'tester', 'courier', 'writer'];
 export const MAX_BODY_BYTES = 8192;
 export const MAX_FACTS = 30;
 export const MAX_FACT_LENGTH = 400;
@@ -19,6 +19,10 @@ const ROLE_TASK: Readonly<Record<AgentId, string>> = {
   archivist: 'Write two sentences summarising the career timeline, newest first.',
   builder: 'Write two sentences about what has shipped and how it is verified.',
   courier: 'Write two sentences telling a visitor how to request the resume and what happens next.',
+  planner: 'Write two sentences about how the page is ordered for a visitor reading from top to bottom.',
+  coder: 'Write two sentences comparing the technology in the projects with the skills listed.',
+  tester: 'Write two sentences about how the project cards link to code and live demos.',
+  writer: 'Write two sentences in plain English describing how a visitor asks for the resume.',
 };
 
 const SYSTEM_PROMPT = [

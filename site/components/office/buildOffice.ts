@@ -159,7 +159,7 @@ function plantRow(parent: THREE.Object3D): void {
   plant(parent, 6.3, -6.2, 1.1);
   plant(parent, 6.4, 0.6);
   plant(parent, -0.6, 6.5);
-  plant(parent, -6.4, -1.2);
+  plant(parent, -6.4, 3.4);
 }
 
 function wallDecor(parent: THREE.Object3D): void {
@@ -238,7 +238,7 @@ export function buildOffice(scene: THREE.Scene): Office {
     robots[role.id] = rig;
   });
 
-  bookcase(scene, -6.4, -4.8, Math.PI / 2);
+  bookcase(scene, -6.6, -1.6, Math.PI / 2);
   cabinets(scene, 3.1, -6.5, 4);
   crates(scene, -4.8, 6.0);
   crates(scene, 5.2, 5.8);
@@ -247,7 +247,7 @@ export function buildOffice(scene: THREE.Scene): Office {
   plantRow(scene);
 
   const lights: THREE.Light[] = [
-    lamp(scene, 6.0, 1.4),
+    lamp(scene, 6.5, -1.8),
     lamp(scene, -2.6, -1.8),
   ];
 

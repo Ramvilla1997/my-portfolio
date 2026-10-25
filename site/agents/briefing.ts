@@ -40,6 +40,14 @@ export function pageBriefing(agent: AgentId): string {
       return `Checked ${projects.length} projects: ${liveDemoCount()} with live demos, ${codeCount()} with public code, ${inProgressCount()} in progress.`;
     case 'courier':
       return `The request form is ready. Requests go to ${profile.email}, and I reply personally.`;
+    case 'planner':
+      return `Checked the page order: Workspace, About, Experience, Projects, Resume, then Contact.`;
+    case 'coder':
+      return `Compared ${projects.length} project stacks with ${skillCount()} listed skills.`;
+    case 'tester':
+      return `Checked ${codeCount()} code links and ${liveDemoCount()} live demo links across the project cards.`;
+    case 'writer':
+      return `The request copy is plain. Requests go to ${profile.email}, and the form is on this page.`;
   }
 }
 
@@ -54,6 +62,14 @@ export function groundingFacts(agent: AgentId): readonly string[] {
       return projects.map((project) => `${project.title}: ${project.summary} Stack: ${project.stack}.`);
     case 'courier':
       return [`Resume requests are sent by the form on this page to ${profile.email}.`, `Resume is shared on request.`];
+    case 'planner':
+      return ['The page order is Workspace, About, Experience, Projects, Resume, Contact.'];
+    case 'coder':
+      return [...about.skills.map((group) => `${group.name}: ${group.items.join(', ')}`), ...projects.map((project) => `${project.title} stack: ${project.stack}.`)];
+    case 'tester':
+      return projects.map((project) => `${project.title}: ${project.codeUrl ? 'has code' : 'no code link'}; ${project.liveUrl ? 'has a live demo' : 'no live demo'}.`);
+    case 'writer':
+      return [about.summary, `Resume requests are sent by the form on this page to ${profile.email}.`];
   }
 }
 
