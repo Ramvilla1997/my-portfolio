@@ -2,8 +2,6 @@
 
 Personal portfolio for Ram Villa, Senior Full-Stack Engineer. The site is an agent playground: visitors ask questions, and the agent who looks after that part of the page walks over and answers from the page's own content.
 
-Live: https://my-portfolio-ram-villa.vercel.app
-
 ## Repository layout
 
 | Path | What it is |
@@ -43,7 +41,7 @@ Every fact on the site is in `site/content/portfolio.ts`. The playground's searc
 
 ## Deploy
 
-Vercel project `my-portfolio`, Root Directory `site`. Each push to `main` deploys production.
+Vercel project `my-portfolio`, Root Directory `site`. Each push to `main` creates a production deployment in the `ram-villa` team.
 
 ## Contact
 
