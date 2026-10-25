@@ -23,6 +23,7 @@ export interface AgentRole {
   readonly desk: Point;
   readonly work: Point;
   readonly taskLabel: string;
+  readonly idleTasks: readonly string[];
   readonly effect: EffectKind;
 }
 
@@ -44,6 +45,7 @@ export const roster: readonly AgentRole[] = [
     desk: { x: 10, y: 18 },
     work: { x: 24, y: 32 },
     taskLabel: 'Scan the background',
+    idleTasks: ['Re-checking the skill list against the summary', 'Counting the skills in each group', 'Reading the background summary again'],
     effect: 'radar',
   },
   {
@@ -55,6 +57,7 @@ export const roster: readonly AgentRole[] = [
     desk: { x: 60, y: 18 },
     work: { x: 74, y: 32 },
     taskLabel: 'File the timeline',
+    idleTasks: ['Checking the timeline is newest first', 'Matching each role to its dates', 'Re-filing the oldest role'],
     effect: 'stamp',
   },
   {
@@ -66,6 +69,7 @@ export const roster: readonly AgentRole[] = [
     desk: { x: 10, y: 68 },
     work: { x: 24, y: 82 },
     taskLabel: 'Check what ships',
+    idleTasks: ['Checking which projects have live demos', 'Checking which projects have public code', 'Looking for the project in progress'],
     effect: 'sparks',
   },
   {
@@ -77,6 +81,7 @@ export const roster: readonly AgentRole[] = [
     desk: { x: 60, y: 68 },
     work: { x: 74, y: 82 },
     taskLabel: 'Prepare a resume request',
+    idleTasks: ['Checking the resume request form', 'Confirming where requests are sent', 'Making sure the form is ready to send'],
     effect: 'glow',
   },
 ];

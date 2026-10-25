@@ -11,6 +11,7 @@ type Phase = 'idle' | 'walking' | 'working' | 'done';
 interface AgentState {
   readonly phase: Phase;
   readonly at: Point;
+  readonly note: string | null;
 }
 
 interface LogEntry {
@@ -21,6 +22,11 @@ interface LogEntry {
 }
 
 const LOG_LIMIT = 12;
+const AUTO_WALK_MS = 700;
+const AUTO_WORK_MS = 1400;
+const AUTO_GAP_MIN_MS = 9000;
+const AUTO_GAP_MAX_MS = 14000;
+const PAUSE_AFTER_MANUAL_MS = 30000;
 
 const PHASE_TEXT: Record<Phase, (role: AgentRole) => string> = {
   idle: () => 'At desk',
@@ -41,11 +47,15 @@ function sectionLabel(section: SectionId): string {
 }
 
 function initialStates(): Record<AgentId, AgentState> {
-  return Object.fromEntries(roster.map((role) => [role.id, { phase: 'idle', at: role.desk }])) as Record<AgentId, AgentState>;
+  return Object.fromEntries(roster.map((role) => [role.id, { phase: 'idle', at: role.desk, note: null }])) as Record<AgentId, AgentState>;
 }
 
 function wait(milliseconds: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+}
+
+function randomBetween(minimum: number, maximum: number): number {
+  return minimum + Math.random() * (maximum - minimum);
 }
 
 function scrollToSection(section: SectionId, smooth: boolean): void {
@@ -78,6 +88,8 @@ export function Workspace() {
   const busyRef = useRef(false);
   const alive = useRef(false);
   const keyRef = useRef(0);
+  const lastManualRef = useRef(0);
+  const cursorRef = useRef(0);
 
   useEffect(() => {
     alive.current = true;
@@ -86,8 +98,11 @@ export function Workspace() {
     };
   }, []);
 
-  const move = useCallback((id: AgentId, phase: Phase, at: Point) => {
-    setAgents((previous) => ({ ...previous, [id]: { phase, at } }));
+  const move = useCallback((id: AgentId, phase: Phase, at: Point, note?: string) => {
+    setAgents((previous) => ({
+      ...previous,
+      [id]: { phase, at, note: note ?? previous[id].note },
+    }));
   }, []);
 
   const append = useCallback((agent: AgentId, text: string, source: LogEntry['source']) => {
@@ -101,6 +116,7 @@ export function Workspace() {
       if (busyRef.current) {
         return;
       }
+      lastManualRef.current = Date.now();
       busyRef.current = true;
       setBusy(true);
       const walkMs = reduced ? 0 : timing.walkMs;
@@ -132,6 +148,58 @@ export function Workspace() {
     },
     [append, move, play, reduced],
   );
+
+  /* One small task for the next agent in turn. It plays the page effect and writes no log entry. */
+  const autoStep = useCallback(async () => {
+    if (busyRef.current) {
+      return;
+    }
+    const role = roster[cursorRef.current % roster.length];
+    cursorRef.current += 1;
+    if (!role || role.idleTasks.length === 0) {
+      return;
+    }
+    const note = role.idleTasks[Math.floor(Math.random() * role.idleTasks.length)] ?? role.taskLabel;
+    busyRef.current = true;
+    setBusy(true);
+
+    move(role.id, 'walking', role.work);
+    await wait(AUTO_WALK_MS);
+    if (!alive.current) return;
+
+    move(role.id, 'working', role.work);
+    play(role.section, role.effect, AUTO_WORK_MS);
+    await wait(AUTO_WORK_MS);
+    if (!alive.current) return;
+
+    move(role.id, 'walking', role.desk, note);
+    await wait(AUTO_WALK_MS);
+    if (!alive.current) return;
+
+    move(role.id, 'idle', role.desk, note);
+    busyRef.current = false;
+    setBusy(false);
+  }, [move, play]);
+
+  useEffect(() => {
+    if (reduced) {
+      return;
+    }
+    let timer = 0;
+    const schedule = () => {
+      timer = window.setTimeout(async () => {
+        const quiet = document.hidden || Date.now() - lastManualRef.current < PAUSE_AFTER_MANUAL_MS;
+        if (!quiet) {
+          await autoStep();
+        }
+        if (alive.current) {
+          schedule();
+        }
+      }, randomBetween(AUTO_GAP_MIN_MS, AUTO_GAP_MAX_MS));
+    };
+    schedule();
+    return () => window.clearTimeout(timer);
+  }, [autoStep, reduced]);
 
   const askGemini = useCallback(
     async (role: AgentRole) => {
@@ -199,7 +267,9 @@ export function Workspace() {
                       <span className="ws-role"> · {role.role}</span>
                     </div>
                   </div>
-                  <p className="ws-status" aria-live="polite">{PHASE_TEXT[state.phase](role)}</p>
+                  <p className="ws-status" aria-live="polite">
+                    {state.phase === 'idle' && state.note ? state.note : PHASE_TEXT[state.phase](role)}
+                  </p>
                   <div className="ws-actions">
                     <button type="button" className="btn btn-primary" onClick={() => void runTask(role)} disabled={busy}>
                       {role.taskLabel}
