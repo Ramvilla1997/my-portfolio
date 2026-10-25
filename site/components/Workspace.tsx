@@ -27,6 +27,14 @@ const AUTO_WORK_MS = 1400;
 const AUTO_GAP_MIN_MS = 9000;
 const AUTO_GAP_MAX_MS = 14000;
 const PAUSE_AFTER_MANUAL_MS = 30000;
+const AUTO_FIRST_MS = 4000;
+const LIVE_LIMIT = 4;
+
+interface LiveItem {
+  readonly key: number;
+  readonly agent: AgentId;
+  readonly text: string;
+}
 
 const PHASE_TEXT: Record<Phase, (role: AgentRole) => string> = {
   idle: () => 'At desk',
@@ -84,6 +92,7 @@ export function Workspace() {
   const { play } = useEffects();
   const [agents, setAgents] = useState<Record<AgentId, AgentState>>(initialStates);
   const [log, setLog] = useState<readonly LogEntry[]>([]);
+  const [live, setLive] = useState<readonly LiveItem[]>([]);
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const alive = useRef(false);
@@ -162,6 +171,9 @@ export function Workspace() {
     const note = role.idleTasks[Math.floor(Math.random() * role.idleTasks.length)] ?? role.taskLabel;
     busyRef.current = true;
     setBusy(true);
+    keyRef.current += 1;
+    const liveKey = keyRef.current;
+    setLive((previous) => [{ key: liveKey, agent: role.id, text: note }, ...previous].slice(0, LIVE_LIMIT));
 
     move(role.id, 'walking', role.work);
     await wait(AUTO_WALK_MS);
@@ -186,18 +198,18 @@ export function Workspace() {
       return;
     }
     let timer = 0;
-    const schedule = () => {
+    const schedule = (delay: number) => {
       timer = window.setTimeout(async () => {
         const quiet = document.hidden || Date.now() - lastManualRef.current < PAUSE_AFTER_MANUAL_MS;
         if (!quiet) {
           await autoStep();
         }
         if (alive.current) {
-          schedule();
+          schedule(randomBetween(AUTO_GAP_MIN_MS, AUTO_GAP_MAX_MS));
         }
-      }, randomBetween(AUTO_GAP_MIN_MS, AUTO_GAP_MAX_MS));
+      }, delay);
     };
-    schedule();
+    schedule(AUTO_FIRST_MS);
     return () => window.clearTimeout(timer);
   }, [autoStep, reduced]);
 
@@ -222,6 +234,26 @@ export function Workspace() {
         <p className="lede">
           Each agent works one room. Run a task and it walks to that section, does its job on the page, then returns to its desk.
         </p>
+
+        <div className="ws-live" aria-live="polite">
+          <span className="ws-live-dot" aria-hidden="true" />
+          {live.length === 0 ? (
+            <span>The agents are starting their first task.</span>
+          ) : (
+            <span>
+              <strong>{roster.find((role) => role.id === live[0]?.agent)?.name}</strong> {live[0]?.text}
+            </span>
+          )}
+        </div>
+        {live.length > 1 ? (
+          <ul className="ws-live-history" aria-label="Recent agent tasks">
+            {live.slice(1).map((item) => (
+              <li key={item.key}>
+                {roster.find((role) => role.id === item.agent)?.name}: {item.text}
+              </li>
+            ))}
+          </ul>
+        ) : null}
 
         <div className="ws-grid">
           <div className="ws-floor" aria-hidden="true">
