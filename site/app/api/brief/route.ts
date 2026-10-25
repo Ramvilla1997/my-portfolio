@@ -12,6 +12,7 @@ export async function POST(request: Request) {
     fetchImpl: fetch,
     limiter,
     now: () => Date.now(),
+    model: process.env.GEMINI_MODEL,
   });
   return NextResponse.json(result.body, { status: result.status, headers: { 'cache-control': 'no-store' } });
 }

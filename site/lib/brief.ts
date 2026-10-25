@@ -6,7 +6,7 @@ export const MAX_FACTS = 30;
 export const MAX_FACT_LENGTH = 400;
 export const RATE_LIMIT = 20;
 export const RATE_WINDOW_MS = 60_000;
-export const GEMINI_MODEL = 'gemini-2.5-flash';
+export const DEFAULT_GEMINI_MODEL = 'gemini-3.8-flash';
 
 const ROLE_TASK: Readonly<Record<AgentId, string>> = {
   scout: 'Write two sentences about the person background and core skills.',
@@ -97,6 +97,7 @@ export interface BriefDeps {
   readonly fetchImpl: typeof fetch;
   readonly limiter: (key: string, now: number) => boolean;
   readonly now: () => number;
+  readonly model?: string;
 }
 
 export interface BriefResult {
@@ -138,7 +139,7 @@ export async function generateBrief(request: Request, deps: BriefDeps): Promise<
   try {
     const input = parseBrief(await readJson(request));
     const upstream = await deps.fetchImpl(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${deps.model ?? DEFAULT_GEMINI_MODEL}:generateContent`,
       {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'x-goog-api-key': deps.apiKey },
