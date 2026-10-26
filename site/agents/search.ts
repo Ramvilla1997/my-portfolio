@@ -1,4 +1,4 @@
-import { about, education, jobs, openSource, profile, projects, summary } from '../content/portfolio';
+import { about, capabilities, domains, education, jobs, openSource, profile, projects, summary } from '../content/portfolio';
 import type { AgentId, SectionId } from './roster';
 
 export interface Passage {
@@ -37,13 +37,22 @@ export function passages(): Passage[] {
       text: `${group.name} skills: ${group.items.join(', ')}.`,
     });
   }
+  for (const capability of [...capabilities, domains]) {
+    list.push({
+      id: `capability-${capability.title}`,
+      section: 'about',
+      agent: SECTION_AGENT.about,
+      title: `Skills: ${capability.title}`,
+      text: `${capability.title}: ${capability.summary} ${capability.tags.join(', ')}.`,
+    });
+  }
   jobs.forEach((job, index) => {
     list.push({
       id: `job-${index}`,
       section: 'experience',
       agent: SECTION_AGENT.experience,
       title: `${job.title}, ${job.org}`,
-      text: `${job.title} at ${job.org}, ${job.period}, ${job.place}. ${job.points.join(' ')}`,
+      text: `${job.title} at ${job.org}, ${job.period}, ${job.place}. ${job.summary} ${job.points.join(' ')}`,
     });
   });
   for (const project of [...projects, ...openSource]) {

@@ -8,7 +8,15 @@ export interface Job {
   readonly place: string;
   readonly title: string;
   readonly org: string;
+  readonly summary: string;
+  readonly tags: readonly string[];
   readonly points: readonly string[];
+}
+
+export interface Capability {
+  readonly title: string;
+  readonly summary: string;
+  readonly tags: readonly string[];
 }
 
 export interface Project {
@@ -59,12 +67,43 @@ export const about = {
   certifications: ['AWS Certified Developer – Associate'],
 };
 
+export const capabilities: readonly Capability[] = [
+  {
+    title: 'Frontend platforms',
+    summary: 'Large React and TypeScript apps, migrated from Angular without a feature freeze.',
+    tags: ['React', 'TypeScript', 'Angular', 'React Native', 'WCAG & AODA', 'i18n'],
+  },
+  {
+    title: 'Serverless AWS',
+    summary: 'Event-driven backends and data pipelines, defined as infrastructure as code.',
+    tags: ['Lambda', 'EventBridge', 'SQS', 'Glue', 'DynamoDB', 'AWS SAM'],
+  },
+  {
+    title: 'AI & LLM systems',
+    summary: 'Grounded RAG chatbots and agentic developer tooling used every day.',
+    tags: ['RAG', 'AWS Bedrock', 'Claude', 'MCP', 'Copilot agents'],
+  },
+  {
+    title: 'Release safety & quality',
+    summary: 'Changes that roll back with a config switch, backed by automated tests.',
+    tags: ['Blue-green', 'Feature flags', 'CI/CD', 'Jest', 'Cypress', 'Docker'],
+  },
+];
+
+export const domains = {
+  title: 'Healthcare & fintech',
+  summary: 'Regulated products where security, privacy and accessibility are requirements, not extras.',
+  tags: ['PHIPA', 'FHIR', 'OAuth 2.0', 'OIDC', 'WCAG'],
+} as const;
+
 export const jobs: readonly Job[] = [
   {
     period: 'Feb 2025 – Present',
     place: 'Ottawa, ON',
     title: 'Senior Software Engineer (Full-Stack)',
     org: 'Ontario Health',
+    summary: 'Full-stack delivery on Ontario Health platforms: an LLM chatbot on AWS Bedrock, a serverless ingestion pipeline, and an incremental Angular-to-React migration.',
+    tags: ['React', 'Angular', 'TypeScript', 'AWS Bedrock', 'Lambda', 'DynamoDB', 'PostgreSQL', 'FHIR', 'OAuth 2.0'],
     points: [
       'Built the ONE Health chatbot with RAG over Ontario Health docs, using Claude on AWS Bedrock.',
       'Kept chatbot answers grounded in approved sources only, so responses stay within published Ontario Health documentation.',
@@ -87,6 +126,8 @@ export const jobs: readonly Job[] = [
     place: 'Ottawa, ON',
     title: 'Full-Stack Developer',
     org: 'Independent Projects',
+    summary: 'Built four full-stack products end to end: PDF Chat, Screenshot to Code, a real-time whiteboard and a task CLI.',
+    tags: ['TypeScript', 'React', 'Node.js', 'WebSocket'],
     points: [
       'Built PDF Chat, an app for asking questions over PDF documents, in TypeScript and React.',
       'Built Screenshot to Code, which turns UI screenshots into front-end code.',
@@ -99,6 +140,8 @@ export const jobs: readonly Job[] = [
     place: 'Ottawa, ON',
     title: 'Software Engineer (Co-op)',
     org: 'University of Ottawa',
+    summary: 'React features for a healthcare app handling patient data under PHIPA, shipped through CI/CD pipelines.',
+    tags: ['React', 'Redux', 'Jenkins', 'GitHub Actions', 'PHIPA'],
     points: [
       'Built React features with Hooks and Redux for a healthcare app, handling patient data under PHIPA.',
       'Shipped changes through Jenkins and GitHub Actions pipelines for testing and deployment.',
@@ -110,6 +153,8 @@ export const jobs: readonly Job[] = [
     place: 'India',
     title: 'Senior Programmer',
     org: 'Ionixx Technologies',
+    summary: 'Frontend screens and APIs for a multi-exchange crypto trading platform and a community travel app.',
+    tags: ['React', 'React Native', 'Node.js', 'JWT & OAuth', 'Docker'],
     points: [
       'Wrote React and React Native screens for Bitsian, a multi-exchange crypto trading platform, and built its Node.js APIs.',
       'Built frontend screens and API endpoints for Voyaj, a community travel app.',
@@ -122,6 +167,8 @@ export const jobs: readonly Job[] = [
     place: 'Hyderabad, India',
     title: 'Junior Software Developer',
     org: 'Sims Healthcare Pvt Ltd',
+    summary: 'IoT patient-monitoring platform with real-time 12-lead ECG streaming and medical-device integration.',
+    tags: ['React Native', 'Node.js', 'PostgreSQL', 'WebSocket', 'Docker'],
     points: [
       'Built an IoT patient-monitoring system with React Native, Node.js, and PostgreSQL.',
       'Built 12-lead ECG waveform streaming and integrated medical devices with the monitoring platform.',

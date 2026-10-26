@@ -4,6 +4,7 @@ import { about, education, jobs, openSource, profile, projects, summary } from '
 import { SparkField } from './SparkField';
 import { timing } from '../agents/roster';
 import { useSectionEffect } from './EffectsContext';
+import { Tags } from './Tags';
 
 function sectionClass(base: string, effect: string | null): string {
   return effect === null ? base : `${base} fx-${effect}`;
@@ -40,7 +41,7 @@ export function Projects() {
             <span className="chip">{project.tag}</span>
             <h3>{project.title}</h3>
             <p>{project.summary}</p>
-            <p className="label">{project.stack}</p>
+            <Tags items={project.stack.split(' · ')} tone={index === 1 ? 'ink' : 'paper'} />
           </article>
         ))}
       </div>
@@ -74,14 +75,20 @@ export function Experience() {
       <SectionHead index="03" title="Experience" titleId="exp-title" aside="6+ years, 5 roles" />
       <div className="tile tile--paper jobs" data-reveal>
         {jobs.map((job, index) => (
-          <details key={`${job.org}-${job.period}`} className="job" open={index === 0}>
+          <details key={`${job.org}-${job.period}`} className="job">
             <summary>
               <span className="label">{job.period}</span>
-              <strong>{job.org}</strong>
-              <span className="job-title">{job.title}</span>
+              <span className="job-head">
+                <strong>{job.org}</strong>
+                <span className="job-title">{job.title}</span>
+              </span>
               {index === 0 ? <span className="filed">Current</span> : null}
               <span className="job-toggle" aria-hidden="true">
                 +
+              </span>
+              <span className="job-summary">{job.summary}</span>
+              <span className="job-tags">
+                <Tags items={job.tags} />
               </span>
             </summary>
             <ul>

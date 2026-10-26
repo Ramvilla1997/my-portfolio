@@ -4,16 +4,19 @@ import { About, Contact, Experience, Projects, Resume } from './Sections';
 import { EffectsProvider } from './EffectsContext';
 import { Playground } from './Playground';
 import { useReveal } from './useReveal';
-import { about, profile } from '../content/portfolio';
+import { capabilities, domains, profile } from '../content/portfolio';
+import { Tags } from './Tags';
 
-const STATS = [
-  { value: '6+', label: 'years in production' },
-  { value: '2.1→1.3MB', label: 'frontend bundle' },
-  { value: '10/50/100', label: '% staged feature rollouts' },
-  { value: 'AWS', label: 'Certified Developer – Associate' },
-] as const;
-
-const MARQUEE = about.skills.flatMap((group) => group.items).slice(0, 20);
+const MARQUEE = [
+  'Full-stack architecture',
+  'Serverless AWS',
+  'LLM & RAG systems',
+  'Agentic developer tooling',
+  'Accessibility by default',
+  'Healthcare data (PHIPA, FHIR)',
+  'Release engineering',
+  'Frontend migrations',
+];
 
 export function Site() {
   useReveal();
@@ -76,21 +79,25 @@ export function Site() {
                   ↘
                 </span>
               </a>
-              <div className="tile tile--ink metric enter" style={{ animationDelay: '0.25s' }}>
-                <p className="metric-value">850→120ms</p>
-                <p className="label">Provider-search latency with composite PostgreSQL indexes</p>
+              <div className="tile tile--ink domain enter" style={{ animationDelay: '0.25s' }}>
+                <p className="label">Domains</p>
+                <p className="domain-title">{domains.title}</p>
+                <p className="domain-text">{domains.summary}</p>
+                <Tags items={domains.tags} tone="ink" />
               </div>
             </div>
           </section>
 
-          <dl className="stats">
-            {STATS.map((stat, index) => (
-              <div key={stat.label} className="tile tile--paper stat enter" style={{ animationDelay: `${0.3 + index * 0.06}s` }}>
-                <dd>{stat.value}</dd>
-                <dt className="label">{stat.label}</dt>
-              </div>
+          <section className="capabilities" aria-label="Capabilities">
+            {capabilities.map((capability, index) => (
+              <article key={capability.title} className="tile tile--paper capability enter" style={{ animationDelay: `${0.3 + index * 0.06}s` }}>
+                <p className="label">{String(index + 1).padStart(2, '0')}</p>
+                <h2>{capability.title}</h2>
+                <p className="capability-text">{capability.summary}</p>
+                <Tags items={capability.tags} />
+              </article>
             ))}
-          </dl>
+          </section>
 
           <div className="marquee" aria-hidden="true">
             <div className="marquee-track">
