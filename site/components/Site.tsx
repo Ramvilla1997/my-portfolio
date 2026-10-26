@@ -6,34 +6,34 @@ import { Playground } from './Playground';
 import { useReveal } from './useReveal';
 import { about, profile } from '../content/portfolio';
 
-const HERO_STATS = [
-  { value: '6+', label: 'Years in production' },
-  { value: '850→120ms', label: 'Provider search latency' },
-  { value: '2.1→1.3MB', label: 'Frontend bundle' },
-  { value: 'AWS', label: 'Certified Developer' },
+const STATS = [
+  { value: '6+', label: 'years in production' },
+  { value: '2.1→1.3MB', label: 'frontend bundle' },
+  { value: '10/50/100', label: '% staged feature rollouts' },
+  { value: 'AWS', label: 'Certified Developer – Associate' },
 ] as const;
 
-const MARQUEE = about.skills.flatMap((group) => group.items).slice(0, 24);
+const MARQUEE = about.skills.flatMap((group) => group.items).slice(0, 20);
 
 export function Site() {
   useReveal();
   return (
     <EffectsProvider>
-      <header className="nav">
-        <div className="wrap nav-inner">
+      <div className="frame">
+        <header className="nav">
           <a className="mark" href="#top">
-            RV<span>.</span>
+            Ram Villa<span aria-hidden="true">●</span>
           </a>
           <nav aria-label="Primary">
             <ul className="nav-links">
               <li>
-                <a href="#workspace">Playground</a>
+                <a href="#projects">Work</a>
               </li>
               <li>
                 <a href="#experience">Experience</a>
               </li>
               <li>
-                <a href="#projects">Work</a>
+                <a href="#workspace">Playground</a>
               </li>
               <li>
                 <a href="#resume">Resume</a>
@@ -45,79 +45,74 @@ export function Site() {
               </li>
             </ul>
           </nav>
-        </div>
-      </header>
+        </header>
 
-      <main id="main">
-        <section id="top" className="hero">
-          <div className="hero-art" aria-hidden="true">
-            <img src="/assets/img/hero.webp" alt="" width={1376} height={768} fetchPriority="high" />
-          </div>
-          <div className="hero-backdrop" aria-hidden="true" />
-          <div className="wrap hero-inner">
-            <p className="kicker reveal" style={{ animationDelay: '0.05s' }}>
-              <span className="pulse" aria-hidden="true" /> Currently at Ontario Health · {profile.location}
-            </p>
-            <h1 className="hero-title">
-              <span className="line reveal" style={{ animationDelay: '0.12s' }}>
+        <main id="main">
+          <section id="top" className="hero" aria-labelledby="hero-title">
+            <div className="tile tile--paper hero-main enter" style={{ animationDelay: '0.05s' }}>
+              <p className="label">Senior Full-Stack Engineer — {profile.location}</p>
+              <h1 id="hero-title">
                 Ram
-              </span>
-              <span className="line line--outline reveal" style={{ animationDelay: '0.22s' }}>
-                Villa
-              </span>
-            </h1>
-            <p className="hero-role reveal" style={{ animationDelay: '0.32s' }}>
-              {profile.title}
-            </p>
-            <p className="lede reveal" style={{ animationDelay: '0.4s' }}>
-              {profile.intro}
-            </p>
-            <div className="cta-row reveal" style={{ animationDelay: '0.5s' }}>
-              <a className="btn btn-primary" href="#workspace">
-                Ask the office
+                <br />
+                Villa<span className="dot">.</span>
+              </h1>
+              <div className="hero-foot">
+                <p className="hero-intro">{profile.intro}</p>
+                <div className="cta-row">
+                  <a className="btn btn-ink" href="#projects">
+                    See the work
+                  </a>
+                  <a className="btn btn-line" href={profile.resumePdf} target="_blank" rel="noopener">
+                    Resume PDF ↗
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div className="hero-side">
+              <a className="tile tile--accent now enter" href="#experience" style={{ animationDelay: '0.15s' }}>
+                <span className="label">Now</span>
+                <span className="now-title">Senior Software Engineer at Ontario Health</span>
+                <span className="now-arrow" aria-hidden="true">
+                  ↘
+                </span>
               </a>
-              <a className="btn" href="#projects">
-                See the work
-              </a>
-              <a className="btn btn-ghost" href={profile.resumePdf} target="_blank" rel="noopener">
-                Resume PDF ↗
-              </a>
+              <div className="tile tile--ink metric enter" style={{ animationDelay: '0.25s' }}>
+                <p className="metric-value">850→120ms</p>
+                <p className="label">Provider-search latency with composite PostgreSQL indexes</p>
+              </div>
+            </div>
+          </section>
+
+          <dl className="stats">
+            {STATS.map((stat, index) => (
+              <div key={stat.label} className="tile tile--paper stat enter" style={{ animationDelay: `${0.3 + index * 0.06}s` }}>
+                <dd>{stat.value}</dd>
+                <dt className="label">{stat.label}</dt>
+              </div>
+            ))}
+          </dl>
+
+          <div className="marquee" aria-hidden="true">
+            <div className="marquee-track">
+              {[...MARQUEE, ...MARQUEE].map((item, index) => (
+                <span key={`${item}-${index}`}>{item}</span>
+              ))}
             </div>
           </div>
-          <div className="wrap">
-            <dl className="stats reveal" style={{ animationDelay: '0.65s' }}>
-              {HERO_STATS.map((stat) => (
-                <div key={stat.label} className="stat">
-                  <dd>{stat.value}</dd>
-                  <dt>{stat.label}</dt>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </section>
 
-        <div className="marquee" aria-hidden="true">
-          <div className="marquee-track">
-            {[...MARQUEE, ...MARQUEE].map((item, index) => (
-              <span key={`${item}-${index}`}>{item}</span>
-            ))}
-          </div>
-        </div>
+          <Playground />
+          <Projects />
+          <Experience />
+          <About />
+          <Resume />
+          <Contact />
+        </main>
 
-        <Playground />
-        <About />
-        <Experience />
-        <Projects />
-        <Resume />
-        <Contact />
-      </main>
-
-      <footer className="footer">
-        <div className="wrap footer-inner">
+        <footer className="footer">
           <span>© {new Date().getFullYear()} {profile.name}</span>
-          <span>Designed and built by Ram · Next.js on Vercel</span>
-        </div>
-      </footer>
+          <span>Built with Next.js · Hosted on Vercel</span>
+        </footer>
+      </div>
     </EffectsProvider>
   );
 }

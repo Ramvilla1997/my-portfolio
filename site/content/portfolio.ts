@@ -18,7 +18,6 @@ export interface Project {
   readonly summary: string;
   readonly stack: string;
   readonly status: 'shipped' | 'in-progress';
-  readonly image?: string;
   readonly links?: readonly { readonly label: string; readonly href: string }[];
 }
 
@@ -136,7 +135,6 @@ export const jobs: readonly Job[] = [
 export const projects: readonly Project[] = [
   {
     id: 'docsync',
-    image: '/assets/img/docsync.webp',
     title: 'AI developer tooling',
     tag: 'AI tooling · Ontario Health',
     summary:
@@ -146,7 +144,6 @@ export const projects: readonly Project[] = [
   },
   {
     id: 'jarvis',
-    image: '/assets/img/jarvis.webp',
     title: 'Jarvis',
     tag: 'Agents · in progress',
     summary: 'A three-agent pipeline that turns a Jira ticket into a plan, code, and a PR, with a human approval at each step.',
@@ -155,7 +152,6 @@ export const projects: readonly Project[] = [
   },
   {
     id: 'trading',
-    image: '/assets/img/trading.webp',
     title: 'AI Trading Simulator',
     tag: 'Fintech · in progress',
     summary: 'An educational paper-trading app on Alpaca market data, with AI news analysis. Paper trading only, no real funds at risk.',
@@ -164,7 +160,6 @@ export const projects: readonly Project[] = [
   },
   {
     id: 'spendvoice',
-    image: '/assets/img/spendvoice.webp',
     title: 'SpendVoice',
     tag: 'PWA · in progress',
     summary: 'A voice-driven expense tracker that parses spoken entries and projects 10-year savings from tracked spending.',
@@ -173,7 +168,6 @@ export const projects: readonly Project[] = [
   },
   {
     id: 'pdf-chat',
-    image: '/assets/img/pdf-chat.webp',
     title: 'PDF Chat',
     tag: 'Product',
     summary: 'Ask questions over PDF documents and get answers from the file itself.',
@@ -182,7 +176,6 @@ export const projects: readonly Project[] = [
   },
   {
     id: 'whiteboard',
-    image: '/assets/img/whiteboard.webp',
     title: 'Real-time whiteboard',
     tag: 'Realtime',
     summary: 'A shared drawing board where every connected user sees strokes as they are drawn.',

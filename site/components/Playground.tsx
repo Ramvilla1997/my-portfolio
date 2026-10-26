@@ -167,15 +167,13 @@ export function Playground() {
   }
 
   return (
-    <section id="workspace" className="playground" aria-labelledby="playground-title">
-      <div className="wrap">
-        <div className="section-head" data-reveal>
-          <p className="section-index">
-            <span>01</span> Agent playground
-          </p>
+    <section id="workspace" className="section" aria-labelledby="playground-title">
+      <div className="tile tile--ink playground" data-reveal>
+        <div className="pg-head">
           <h2 id="playground-title">Ask the office.</h2>
+          <span className="sticker">8 agents · idle until you ask</span>
         </div>
-        <p className="lede">Ask anything about my work. Only the agents you need leave their desks.</p>
+        <p className="pg-lede">Ask anything about my work. Only the agents you need leave their desks.</p>
 
         <form className="pg-search" role="search" onSubmit={onSubmit}>
           <label htmlFor="pg-question" className="sr-only">
