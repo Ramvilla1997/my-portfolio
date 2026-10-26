@@ -2,6 +2,8 @@
 
 Personal portfolio for Ram Villa, Senior Full-Stack Engineer. The site is an agent playground: visitors ask questions, and the agent who looks after that part of the page walks over and answers from the page's own content.
 
+Live: https://my-portfolio-ram-villa.vercel.app
+
 ## Repository layout
 
 | Path | What it is |
